@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-transap-bg;
+  }
+  ::selection {
+    @apply bg-transap-accent/30;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-transap-panel border border-transap-border rounded-xl shadow-lg;
+  }
+  .panel-header {
+    @apply px-4 py-3 border-b border-transap-border text-sm font-semibold tracking-wide text-slate-200;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold;
+  }
+  .gauge-value {
+    @apply font-mono text-3xl font-bold tabular-nums;
+  }
+}
