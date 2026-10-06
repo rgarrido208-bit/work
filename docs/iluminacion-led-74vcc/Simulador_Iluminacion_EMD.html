@@ -1,0 +1,533 @@
+<title>Simulador de Iluminación EMD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: puesto de mando a la izquierda (controles); a la derecha, instrumentos, escena nocturna de la locomotora y esquema eléctrico en vivo */
+:root {
+  --bg: #e9ece6;
+  --panel: #f7f8f5;
+  --ink: #18201c;
+  --muted: #56635c;
+  --line: #c7cec7;
+  --accent: #c8701f;
+  --accent-soft: rgba(200, 112, 31, 0.14);
+  --good: #2c8556;
+  --warn: #b7800d;
+  --bad: #c13d33;
+  --scene: #0f1820;
+  --scene-ink: #c9d3dc;
+  --scene-dim: #5d6b78;
+  --body-steel: #2b3640;
+  --body-edge: #46545f;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111513; --panel: #19201c; --ink: #e4eae6; --muted: #98a59e; --line: #2d3832;
+    --accent: #e7913f; --accent-soft: rgba(231, 145, 63, 0.16);
+    --good: #4cb07c; --warn: #d9a63a; --bad: #e0675d;
+    --scene: #0b1218; --scene-ink: #c9d3dc; --scene-dim: #55636f; --body-steel: #26313a; --body-edge: #43515c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111513; --panel: #19201c; --ink: #e4eae6; --muted: #98a59e; --line: #2d3832;
+  --accent: #e7913f; --accent-soft: rgba(231, 145, 63, 0.16);
+  --good: #4cb07c; --warn: #d9a63a; --bad: #e0675d;
+  --scene: #0b1218; --scene-ink: #c9d3dc; --scene-dim: #55636f; --body-steel: #26313a; --body-edge: #43515c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 40px; }
+header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.01em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 70ch; }
+.docs { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.docs a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+.docs a:hover, .docs a:focus-visible { border-bottom-color: var(--accent); }
+.grid { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.stand { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 18px; }
+.group { display: grid; gap: 8px; }
+.label { font-family: var(--font-display); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 500 14px var(--font-body); color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 7px 11px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.btn:focus-visible, input:focus-visible, .opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.opts { display: grid; gap: 6px; }
+.opt { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.opt input { margin: 3px 0 0; accent-color: var(--accent); }
+.opt b { font-weight: 600; }
+.opt small { grid-column: 2; color: var(--muted); font-size: 12.5px; }
+.opt.on { border-color: var(--accent); background: var(--accent-soft); }
+.slider { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
+.slider input { width: 100%; accent-color: var(--accent); grid-column: 1 / -1; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.sw { display: grid; gap: 6px; }
+.sw label { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.sw label:last-child { border-bottom: 0; }
+.toggle { appearance: none; width: 38px; height: 22px; border-radius: 11px; background: var(--line); position: relative; cursor: pointer; flex: none; transition: background .15s; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); transition: transform .15s; }
+.toggle:checked { background: var(--good); }
+.toggle:checked::after { transform: translateX(16px); }
+.crank { width: 100%; font: 600 15px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; padding: 10px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); cursor: pointer; }
+.crank:disabled { opacity: .6; cursor: progress; }
+.live { display: grid; gap: 16px; min-width: 0; }
+.meters { display: grid; grid-template-columns: minmax(170px, 210px) repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1100px) { .meters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gauge { grid-column: 1 / -1; } }
+.meter { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.meter .v { font-family: var(--font-mono); font-size: 24px; font-variant-numeric: tabular-nums; }
+.meter .u { color: var(--muted); font-size: 12.5px; }
+.gauge svg { width: 100%; height: auto; display: block; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+.card h2 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: 0.02em; margin: 0 0 8px; }
+.scene svg, .schem svg { width: 100%; height: auto; display: block; }
+.scroll { overflow-x: auto; }
+.schem .scroll svg { min-width: 640px; }
+.msgs { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.msgs li { display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: start; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--muted); }
+.dot.good { background: var(--good); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+tr.cur td { background: var(--accent-soft); font-weight: 600; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12.5px; border: 1px solid currentColor; }
+.chip.good { color: var(--good); } .chip.warn { color: var(--warn); } .chip.bad { color: var(--bad); } .chip.off { color: var(--muted); }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 1240px) { .two { grid-template-columns: minmax(0, 1fr); } }
+footer { margin-top: 20px; color: var(--muted); font-size: 13px; max-width: 90ch; }
+.flow { stroke-dasharray: 7 9; animation: run var(--dur, 1.2s) linear infinite; }
+@keyframes run { to { stroke-dashoffset: -32; } }
+.flicker { animation: flick .18s steps(2) infinite; }
+@keyframes flick { 50% { opacity: .15; } }
+@media (prefers-reduced-motion: reduce) { .flow, .flicker { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Simulador de iluminación · Locomotora EMD N.º <span id="hdrUnit">49</span></h1>
+      <p class="sub">Elige una solución, cambia el estado del motor y mira cómo responden la red de 74 V, la corriente y la luz de cada circuito.</p>
+    </div>
+    <nav class="docs" aria-label="Documentos del proyecto">
+      <a href="https://claude.ai/code/artifact/c5c4c168-3fb1-4e36-91c0-0a34098086b1" target="_blank" rel="noopener">Memoria de cálculo</a>
+      <a href="https://claude.ai/code/artifact/cac5ccec-2cbc-4676-9ce1-b3eb6c0c1ef6" target="_blank" rel="noopener">Opción B</a>
+      <a href="https://claude.ai/code/artifact/736c0a3f-e4b4-4441-b940-2eecc96bed4b" target="_blank" rel="noopener">Opción E</a>
+    </nav>
+  </header>
+
+  <div class="grid">
+    <aside class="stand" aria-label="Controles">
+      <div class="group">
+        <span class="label">Unidad</span>
+        <div class="seg" id="unitSeg">
+          <button class="btn" type="button" id="u49" data-unit="49" aria-pressed="true">N.º 49</button>
+          <button class="btn" type="button" id="u50" data-unit="50" aria-pressed="false">N.º 50</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="label">Solución instalada</span>
+        <div class="opts" id="opts">
+          <label class="opt"><input type="radio" name="opt" id="optO" value="O"><b>Original · ampolletas 74 V</b><small>Situación actual, sin cambios</small></label>
+          <label class="opt"><input type="radio" name="opt" id="optB" value="B"><b>B · Tira LED + resistencia</b><small>2 tramos de 24 V en serie y resistencia</small></label>
+          <label class="opt"><input type="radio" name="opt" id="optD" value="D" checked><b>D · MCI 74→24 V (adoptada)</b><small>Convertidor DC/DC por circuito</small></label>
+          <label class="opt"><input type="radio" name="opt" id="optE" value="E"><b>E · Lámpara con driver</b><small>Lámpara LED de 50–85 V en cada punto</small></label>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="label">Estado del motor</span>
+        <div class="seg" id="modeSeg">
+          <button class="btn" type="button" id="mStop" data-v="66" aria-pressed="false">Detenido</button>
+          <button class="btn" type="button" id="mRun" data-v="74" aria-pressed="true">En marcha</button>
+          <button class="btn" type="button" id="mFail" data-v="90" aria-pressed="false">Falla regulador</button>
+        </div>
+        <button class="crank" type="button" id="crank">Arrancar el motor</button>
+        <div class="slider">
+          <label for="vSlider" class="label">Tensión de red</label>
+          <span class="mono" id="vOut">74 V</span>
+          <input type="range" id="vSlider" min="30" max="110" step="1" value="74" aria-describedby="vOut">
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="label">Interruptores de cabina</span>
+        <div class="sw" id="switches"></div>
+      </div>
+
+      <div class="group">
+        <div class="slider">
+          <label for="dim" class="label">Atenuador de instrumentos</label>
+          <span class="mono" id="dimOut">100 %</span>
+          <input type="range" id="dim" min="10" max="100" step="5" value="100">
+        </div>
+      </div>
+    </aside>
+
+    <section class="live" aria-live="polite">
+      <div class="meters">
+        <div class="meter gauge" id="gauge"></div>
+        <div class="meter"><span class="label">Corriente total</span><span class="v" id="mI">0</span><span class="u">amperes desde la red</span></div>
+        <div class="meter"><span class="label">Potencia</span><span class="v" id="mP">0</span><span class="u">watts absorbidos</span></div>
+        <div class="meter"><span class="label">Calor perdido</span><span class="v" id="mL">0</span><span class="u" id="mLu">watts</span></div>
+        <div class="meter"><span class="label">Luz promedio</span><span class="v" id="mB">0</span><span class="u">de la nominal</span></div>
+      </div>
+
+      <div class="card scene">
+        <h2>Vista de la locomotora, de noche</h2>
+        <div id="scene"></div>
+      </div>
+
+      <div class="card schem">
+        <h2>Esquema eléctrico en vivo</h2>
+        <div class="scroll" id="schem"></div>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <h2>Qué está pasando</h2>
+          <ul class="msgs" id="msgs"></ul>
+        </div>
+        <div class="card">
+          <h2>Las cuatro soluciones a <span id="cmpV">74 V</span></h2>
+          <div class="scroll"><table id="cmp"></table></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    Modelo didáctico. Potencias LED y configuraciones según la memoria de cálculo y los documentos de las opciones B y E. Las potencias de las ampolletas originales son ilustrativas y deben medirse en terreno. Los focos principales y las luces de zanja quedan fuera del alcance y no se simulan.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const CIRC = [
+    { id: "num", nombre: "Numeradores", det: "4 tableros", pLed: 46.1, pInc: 100, n: 2, pE: 48, mci: "MCI-01/02", r: "R 110 Ω", rW: 25 },
+    { id: "cla", nombre: "Clase y culata", det: "4 luces", pLed: 12, pInc: 60, n: 1, pE: 8, mci: "MCI-03/04", r: "R 390 Ω", rW: 25 },
+    { id: "cab", nombre: "Cabina", det: "2 luces", pLed: 23, pInc: 50, n: 2, pE: 12, mci: "MCI-05", r: "R 110 Ω", rW: 25 },
+    { id: "ins", nombre: "Instrumentos", det: "6 luces", pLed: 4.3, pInc: 18, n: 1, pE: 6, mci: "MCI-06 + PWM", r: "R 1,6 kΩ", rW: 10, dim: true },
+    { id: "est", nombre: "Estribos", det: "4 luces", pLed: 11.5, pInc: 60, n: 2, pE: 24, mci: "MCI-07/08", r: "R 430 Ω", rW: 10 }
+  ];
+  const OPTS = {
+    O: "Original",
+    B: "B · resistencia",
+    D: "D · MCI",
+    E: "E · lámpara con driver"
+  };
+  const state = { unit: "49", opt: "D", V: 74, mode: "run", dim: 1, sw: { num: true, cla: true, cab: true, ins: true, est: true }, cranking: false };
+
+  const fmt = (x, d = 0) => Number(x).toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+  // Modelo eléctrico de un circuito para una solución y una tensión de red
+  function calc(opt, V, c, on, dim) {
+    const r = { b: 0, P: 0, I: 0, loss: 0, st: "off", txt: "Apagado", flick: false, rel: 0 };
+    if (!on) return r;
+    const m = c.dim ? dim : 1;
+    if (opt === "O") {
+      const k = V / 74;
+      r.b = Math.pow(k, 3.4) * (c.dim ? Math.pow(m, 1.6) : 1);
+      r.P = c.pInc * Math.pow(k, 1.6) * (c.dim ? 0.45 + 0.55 * m : 1);
+      r.rel = r.b;
+      r.life = Math.pow(74 / V, 13);
+      if (V > 77) { r.st = "bad"; r.txt = "Se queman antes"; }
+      else if (r.b < 0.9) { r.st = "warn"; r.txt = "Luz débil"; }
+      else { r.st = "good"; r.txt = "Nominal"; }
+    } else if (opt === "B") {
+      const rel = Math.max(0, (V - 16 * c.n) / (74 - 16 * c.n)) * m;
+      const In = c.pLed / (24 * c.n);
+      r.I = rel * In; r.P = V * r.I; r.b = rel; r.rel = rel;
+      r.loss = Math.max(0, r.P - c.pLed * rel);
+      if (rel > 1.2) { r.st = "bad"; r.txt = "Sobrecorriente"; }
+      else if (rel < 0.05) { r.st = "off"; r.txt = "Apagado"; }
+      else if (rel < 0.9 && !(c.dim && m < 1)) { r.st = "warn"; r.txt = "Luz baja"; }
+      else { r.st = "good"; r.txt = c.dim && m < 1 ? "Atenuado" : "Nominal"; }
+    } else if (opt === "D") {
+      if (V < 40) { r.st = "warn"; r.txt = "Bajo 40 V: apagado"; return r; }
+      const pl = c.pLed * m;
+      r.b = m; r.rel = 1; r.P = pl / 0.85; r.loss = r.P - pl;
+      r.st = "good"; r.txt = c.dim && m < 1 ? "Atenuado (PWM)" : "100 %";
+    } else if (opt === "E") {
+      if (V < 50) { r.st = "warn"; r.txt = "Bajo 50 V: apagada"; return r; }
+      r.b = 1; r.rel = 1; r.P = c.pE; r.loss = c.pE * 0.12;
+      if (c.dim && m < 1) { r.flick = true; r.st = "warn"; r.txt = "Parpadea: no atenuable"; }
+      else if (V > 85) { r.st = "bad"; r.txt = "Fuera de rango"; }
+      else { r.st = "good"; r.txt = "100 %"; }
+    }
+    r.I = r.I || (V > 0 ? r.P / V : 0);
+    if (opt === "O") r.loss = 0;
+    return r;
+  }
+
+  function totals(opt, V) {
+    let P = 0, I = 0, L = 0, bw = 0, w = 0, worst = "good", life = null;
+    const rank = { good: 0, off: 1, warn: 2, bad: 3 };
+    const res = CIRC.map(c => {
+      const on = state.sw[c.id];
+      const r = calc(opt, V, c, on, state.dim);
+      if (on) {
+        P += r.P; I += r.I; L += r.loss;
+        bw += Math.min(r.b, 1.6) * c.pLed; w += c.pLed;
+        if (rank[r.st] > rank[worst]) worst = r.st;
+        if (r.life != null) life = r.life;
+      }
+      return r;
+    });
+    return { res, P, I, L, b: w ? bw / w : 0, worst, life };
+  }
+
+  // Voltímetro analógico
+  function gaugeSVG(V) {
+    const a0 = -120, a1 = 120, vmin = 30, vmax = 110;
+    const ang = v => a0 + (clamp(v, vmin, vmax) - vmin) / (vmax - vmin) * (a1 - a0);
+    const pt = (a, r) => { const t = (a - 90) * Math.PI / 180; return [100 + r * Math.cos(t), 92 + r * Math.sin(t)]; };
+    const arc = (v1, v2, r) => { const [x1, y1] = pt(ang(v1), r), [x2, y2] = pt(ang(v2), r); const large = ang(v2) - ang(v1) > 180 ? 1 : 0; return `M${x1} ${y1}A${r} ${r} 0 ${large} 1 ${x2} ${y2}`; };
+    let ticks = "";
+    for (let v = 30; v <= 110; v += 10) {
+      const [x1, y1] = pt(ang(v), 62), [x2, y2] = pt(ang(v), 70), [tx, ty] = pt(ang(v), 52);
+      ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" stroke-width="1.5"/><text x="${tx}" y="${ty + 4}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--font-mono)">${v}</text>`;
+    }
+    const [nx, ny] = pt(ang(V), 66);
+    return `<span class="label">Voltímetro de red</span>
+      <svg viewBox="0 0 200 128" role="img" aria-label="Tensión de red ${fmt(V)} V">
+        <path d="${arc(30, 110, 70)}" fill="none" stroke="var(--line)" stroke-width="8"/>
+        <path d="${arc(50.4, 90, 70)}" fill="none" stroke="var(--good)" stroke-width="8" opacity=".55"/>
+        <path d="${arc(90, 110, 70)}" fill="none" stroke="var(--bad)" stroke-width="8" opacity=".55"/>
+        <path d="${arc(30, 40, 70)}" fill="none" stroke="var(--warn)" stroke-width="8" opacity=".55"/>
+        ${ticks}
+        <line x1="100" y1="92" x2="${nx}" y2="${ny}" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="100" cy="92" r="5" fill="var(--accent)"/>
+        <text x="100" y="122" text-anchor="middle" font-size="18" fill="var(--ink)" font-family="var(--font-mono)">${fmt(V)} V</text>
+      </svg>`;
+  }
+
+  // Escena nocturna de la locomotora con las luces encendidas según el brillo calculado
+  function sceneSVG(t) {
+    const R = {}; CIRC.forEach((c, i) => R[c.id] = t.res[i]);
+    const led = state.opt !== "O";
+    const col = led ? "#eaf3ff" : "#ffc77a";
+    const glow = (id, cx, cy, rad, b, color, flick) => {
+      const o = clamp(b, 0, 1.6);
+      if (o <= 0.01) return "";
+      return `<circle class="${flick ? "flicker" : ""}" cx="${cx}" cy="${cy}" r="${rad * (0.6 + 0.4 * Math.min(o, 1.4))}" fill="url(#${id})" opacity="${clamp(o, 0, 1)}"/>`;
+    };
+    const lamp = (cx, cy, b, color) => `<circle cx="${cx}" cy="${cy}" r="5" fill="${b > 0.01 ? color : "#2a333c"}" stroke="#56636e" stroke-width="1"/>`;
+    const numBoard = (x, y, b, flick) => {
+      const on = b > 0.01;
+      return `<g class="${flick ? "flicker" : ""}"><rect x="${x}" y="${y}" width="56" height="22" rx="3" fill="${on ? col : "#1f2830"}" opacity="${on ? clamp(0.35 + 0.65 * Math.min(b, 1), 0, 1) : 1}" stroke="#56636e"/>
+        <text x="${x + 28}" y="${y + 17}" text-anchor="middle" font-family="var(--font-display)" font-weight="700" font-size="18" fill="${on ? "#10161c" : "#4a5864"}">${state.unit}</text></g>`;
+    };
+    const n = R.num, cl = R.cla, cb = R.cab, ins = R.ins, es = R.est;
+    const over = s => s === "bad";
+    return `<svg viewBox="0 0 1000 300" role="img" aria-label="Locomotora de noche con sus luces según la solución elegida">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1219"/><stop offset="1" stop-color="#18232d"/></linearGradient>
+        <radialGradient id="gW"><stop offset="0" stop-color="${col}" stop-opacity=".95"/><stop offset=".35" stop-color="${col}" stop-opacity=".35"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gR"><stop offset="0" stop-color="#ff5a4a" stop-opacity=".95"/><stop offset=".35" stop-color="#ff5a4a" stop-opacity=".35"/><stop offset="1" stop-color="#ff5a4a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gHot"><stop offset="0" stop-color="#ffffff" stop-opacity="1"/><stop offset=".4" stop-color="#bfe0ff" stop-opacity=".45"/><stop offset="1" stop-color="#bfe0ff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="1000" height="300" fill="url(#sky)"/>
+      <line x1="0" y1="286" x2="1000" y2="286" stroke="#3a4651" stroke-width="4"/>
+      <!-- cuerpo -->
+      <rect x="60" y="238" width="872" height="18" fill="#1d262e" stroke="#46545f"/>
+      <rect x="70" y="150" width="142" height="88" fill="var(--body-steel)" stroke="var(--body-edge)"/>
+      <rect x="210" y="96" width="112" height="142" fill="var(--body-steel)" stroke="var(--body-edge)"/>
+      <rect x="204" y="90" width="124" height="8" fill="#323f4a"/>
+      <rect x="322" y="140" width="598" height="98" fill="var(--body-steel)" stroke="var(--body-edge)"/>
+      ${Array.from({ length: 14 }, (_, i) => `<line x1="${400 + i * 34}" y1="160" x2="${400 + i * 34}" y2="210" stroke="#3a4752" stroke-width="2"/>`).join("")}
+      <rect x="400" y="256" width="200" height="26" rx="8" fill="#1d262e" stroke="#46545f"/>
+      ${[130, 205, 280, 715, 790, 865].map(x => `<circle cx="${x}" cy="270" r="15" fill="#151c22" stroke="#56636e" stroke-width="2"/>`).join("")}
+      <rect x="110" y="254" width="200" height="10" fill="#262f37"/><rect x="695" y="254" width="200" height="10" fill="#262f37"/>
+      <!-- cabina: ventana y panel -->
+      <rect x="224" y="110" width="84" height="42" rx="3" fill="#121a21" stroke="#56636e"/>
+      ${cb.b > 0.01 ? `<rect x="224" y="110" width="84" height="42" rx="3" fill="${col}" opacity="${clamp(cb.b, 0, 1) * 0.8}"/>` : ""}
+      <rect x="232" y="164" width="66" height="22" rx="3" fill="#121a21" stroke="#56636e"/>
+      ${[244, 265, 286].map(x => `<circle class="${ins.flick ? "flicker" : ""}" cx="${x}" cy="175" r="6" fill="${ins.b > 0.01 ? (led ? "#d7f5e6" : "#ffd28c") : "#2a333c"}" opacity="${ins.b > 0.01 ? clamp(0.3 + 0.7 * ins.b, 0, 1) : 1}"/>`).join("")}
+      <!-- foco (fuera de alcance) -->
+      <circle cx="66" cy="196" r="7" fill="#3a4651" stroke="#56636e"/>
+      <!-- brillos -->
+      ${glow(over(n.st) ? "gHot" : "gW", 102, 161, 70, n.b, col, n.flick)}
+      ${glow(over(n.st) ? "gHot" : "gW", 888, 151, 70, n.b, col, n.flick)}
+      ${glow(over(cl.st) ? "gHot" : "gW", 78, 222, 34, cl.b, col)}
+      ${glow("gR", 924, 214, 38, cl.b)}
+      ${glow(over(es.st) ? "gHot" : "gW", 84, 262, 40, es.b, col)}
+      ${glow(over(es.st) ? "gHot" : "gW", 918, 262, 40, es.b, col)}
+      ${glow(over(cb.st) ? "gHot" : "gW", 266, 131, 60, cb.b * 0.7, col)}
+      ${numBoard(74, 150, n.b, n.flick)}
+      ${numBoard(860, 140, n.b, n.flick)}
+      ${lamp(78, 222, cl.b, "#ffffff")}
+      ${lamp(924, 214, cl.b, "#ff5a4a")}
+      ${lamp(84, 262, es.b, col)}
+      ${lamp(918, 262, es.b, col)}
+      <g font-family="var(--font-body)" font-size="12" fill="#8fa0ae">
+        <text x="20" y="40">Frente · numerador, clase, estribo</text>
+        <text x="980" y="40" text-anchor="end">Atrás · numerador, culata (rojo), estribo</text>
+        <text x="266" y="80" text-anchor="middle">Cabina</text>
+        <text x="40" y="186" text-anchor="end" font-size="10">foco</text>
+      </g>
+    </svg>`;
+  }
+
+  // Esquema unifilar en vivo: barra de 74 V, interruptores, equipo de cada solución y luminaria
+  function schemSVG(t) {
+    const V = state.V;
+    const rows = CIRC.map((c, i) => {
+      const y = 62 + i * 62, r = t.res[i], on = state.sw[c.id];
+      const color = !on || r.st === "off" ? "var(--line)" : r.st === "bad" ? "var(--bad)" : r.st === "warn" ? "var(--warn)" : "var(--good)";
+      const nomI = state.opt === "O" ? c.pInc / 74 : state.opt === "E" ? c.pE / 74 : state.opt === "B" ? c.pLed / (24 * c.n) : c.pLed / 0.85 / 74;
+      const flowing = on && r.I > 0.001;
+      const dur = flowing ? clamp(1.1 / Math.max(r.I / nomI, 0.15), 0.25, 6) : 0;
+      const dev = state.opt === "O" ? "sin equipo" : state.opt === "B" ? c.r : state.opt === "D" ? c.mci : "driver en lámpara";
+      const devFill = state.opt === "B" && on ? `rgba(193,61,51,${clamp(r.loss / (c.rW * 0.6), 0, 0.55)})` : state.opt === "D" ? "var(--accent-soft)" : "transparent";
+      const sw = on ? `<line x1="186" y1="${y}" x2="236" y2="${y}" stroke="var(--ink)" stroke-width="2.5"/>` : `<line x1="186" y1="${y}" x2="230" y2="${y - 18}" stroke="var(--muted)" stroke-width="2.5"/>`;
+      const lb = clamp(r.b, 0, 1);
+      const lampCol = state.opt === "O" ? "#ffc77a" : "#eaf3ff";
+      const stChip = !on ? "Interruptor abierto" : r.txt;
+      const outI = on ? `${fmt(r.I, 2)} A` : "0 A";
+      const outB = on ? `${fmt(r.b * 100)} %` : "—";
+      return `<g>
+        <line x1="150" y1="${y}" x2="186" y2="${y}" stroke="var(--muted)" stroke-width="2"/>
+        <circle cx="150" cy="${y}" r="4" fill="var(--muted)"/>
+        <circle cx="186" cy="${y}" r="3.5" fill="var(--ink)"/><circle cx="236" cy="${y}" r="3.5" fill="var(--ink)"/>
+        ${sw}
+        <text x="211" y="${y + 24}" text-anchor="middle" font-size="11" fill="var(--muted)">${c.nombre}</text>
+        <line x1="240" y1="${y}" x2="420" y2="${y}" stroke="var(--line)" stroke-width="3"/>
+        ${flowing ? `<line class="flow" style="--dur:${dur.toFixed(2)}s" x1="240" y1="${y}" x2="420" y2="${y}" stroke="${color}" stroke-width="3"/>` : ""}
+        <rect x="420" y="${y - 18}" width="150" height="36" rx="6" fill="${devFill}" stroke="${state.opt === "O" ? "var(--line)" : "var(--muted)"}" stroke-dasharray="${state.opt === "O" ? "4 3" : "none"}"/>
+        <text x="495" y="${y + 5}" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">${dev}</text>
+        <line x1="570" y1="${y}" x2="700" y2="${y}" stroke="var(--line)" stroke-width="3"/>
+        ${flowing ? `<line class="flow" style="--dur:${dur.toFixed(2)}s" x1="570" y1="${y}" x2="700" y2="${y}" stroke="${color}" stroke-width="3"/>` : ""}
+        <rect class="${r.flick ? "flicker" : ""}" x="700" y="${y - 18}" width="110" height="36" rx="6" fill="${lb > 0.01 ? lampCol : "var(--panel)"}" fill-opacity="${lb > 0.01 ? 0.25 + 0.75 * lb : 1}" stroke="var(--muted)"/>
+        <text x="755" y="${y + 5}" text-anchor="middle" font-size="12.5" fill="${lb > 0.55 ? "#10161c" : "var(--ink)"}">${c.det}</text>
+        <text x="826" y="${y - 2}" font-size="14" fill="var(--ink)" font-family="var(--font-mono)">${outI} · ${outB}</text>
+        <text x="826" y="${y + 16}" font-size="12" fill="${color === "var(--line)" ? "var(--muted)" : color}">${stChip}</text>
+      </g>`;
+    }).join("");
+    return `<svg viewBox="0 0 1000 360" role="img" aria-label="Esquema unifilar en vivo de los 5 circuitos">
+      <rect x="20" y="30" width="96" height="44" rx="6" fill="none" stroke="var(--muted)"/>
+      <text x="68" y="50" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">Batería</text>
+      <text x="68" y="66" text-anchor="middle" font-size="11" fill="var(--muted)">64 V · 32 celdas</text>
+      <rect x="20" y="92" width="96" height="44" rx="6" fill="none" stroke="var(--muted)" stroke-dasharray="${state.V >= 72 && state.V <= 92 ? "none" : "4 3"}"/>
+      <text x="68" y="112" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">Gen. auxiliar</text>
+      <text x="68" y="128" text-anchor="middle" font-size="11" fill="var(--muted)">${state.V >= 72 ? "cargando" : "sin carga"}</text>
+      <line x1="116" y1="52" x2="150" y2="52" stroke="var(--muted)" stroke-width="2"/>
+      <line x1="116" y1="114" x2="150" y2="114" stroke="var(--muted)" stroke-width="2"/>
+      <line x1="150" y1="30" x2="150" y2="${62 + 4 * 62}" stroke="var(--accent)" stroke-width="5"/>
+      <text x="150" y="20" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent)" font-family="var(--font-mono)">${fmt(V)} V</text>
+      <text x="420" y="20" font-size="11.5" fill="var(--muted)">EQUIPO</text>
+      <text x="700" y="20" font-size="11.5" fill="var(--muted)">LUMINARIAS</text>
+      <text x="826" y="20" font-size="11.5" fill="var(--muted)">CORRIENTE · LUZ</text>
+      ${rows}
+      <text x="20" y="352" font-size="11.5" fill="var(--muted)">Esquema unifilar: se dibuja solo el conductor positivo. La velocidad del trazo animado es proporcional a la corriente del circuito.</text>
+    </svg>`;
+  }
+
+  function messages(t) {
+    const V = state.V, o = state.opt, out = [];
+    if (state.cranking) out.push(["warn", "El motor de arranque toma más de 300 A de la batería: la red cae a unos 40 V mientras el motor gira."]);
+    else if (V < 56) out.push(["warn", `La red está en ${fmt(V)} V, bajo el fin de descarga de la batería (56 V).`]);
+    else if (V <= 68) out.push(["good", `Motor detenido: la batería sostiene la red en ${fmt(V)} V.`]);
+    else if (V <= 77) out.push(["good", `Motor en marcha: el generador auxiliar mantiene la red en ${fmt(V)} V.`]);
+    else out.push(["bad", `La red está en ${fmt(V)} V: sobretensión, como una falla del regulador del generador.`]);
+    const r = t.res;
+    if (o === "O") {
+      const b = Math.pow(V / 74, 3.4) * 100, life = Math.pow(74 / V, 13) * 100;
+      out.push([b < 90 ? "warn" : b > 110 ? "bad" : "good", `Las ampolletas dan ${fmt(b)} % de su luz nominal.`]);
+      out.push([life < 80 ? "bad" : "good", `Vida relativa de la ampolleta a esta tensión: ${life > 999 ? "más de 999" : fmt(life)} %. Cada 4 % de sobretensión le quita cerca de 40 % de vida.`]);
+    } else if (o === "B") {
+      const rel = r[0].rel * 100;
+      out.push([rel > 120 ? "bad" : rel < 90 ? "warn" : "good", `Los numeradores reciben ${fmt(rel)} % de su corriente nominal: con resistencia, la luz sigue a la tensión de red.`]);
+      out.push([t.L > 90 ? "bad" : "warn", `Las resistencias convierten ${fmt(t.L)} W en calor (${fmt(t.P ? t.L / t.P * 100 : 0)} % de lo que entra).`]);
+    } else if (o === "D") {
+      if (V < 40) out.push(["warn", "Bajo 40 V el MCI se apaga y se reenciende solo cuando la red se recupera."]);
+      else out.push(["good", `El MCI entrega 24 V fijos: la luz es 100 % entre 40 y 160 V. Pérdida de conversión: ${fmt(t.L)} W.`]);
+    } else if (o === "E") {
+      if (V < 50) out.push(["warn", "Bajo 50 V las lámparas de 50–85 V se apagan."]);
+      else if (V > 85) out.push(["bad", "Sobre 85 V las lámparas trabajan fuera de su rango: pueden fallar."]);
+      else out.push(["good", "Cada lámpara regula su propia corriente: luz 100 % mientras la red esté entre 50 y 85 V."]);
+    }
+    if (state.sw.ins && state.dim < 1) {
+      const m = { O: ["good", "El reóstato original atenúa las ampolletas de instrumentos."], B: ["good", "Un reóstato nuevo de 1,5 kΩ atenúa los instrumentos; el original no alcanza."], D: ["good", "El atenuador PWM a 24 V baja el brillo de los instrumentos sin parpadeo."], E: ["bad", "Las lámparas con driver no se atenúan con reóstato: parpadean."] };
+      out.push(m[o]);
+    }
+    const off = CIRC.filter(c => !state.sw[c.id]).map(c => c.nombre.toLowerCase());
+    if (off.length) out.push(["off", `Interruptor abierto: ${off.join(", ")}.`]);
+    return out.map(([k, s]) => `<li><span class="dot ${k}"></span><span>${s}</span></li>`).join("");
+  }
+
+  function compareTable() {
+    const V = state.V, rank = { good: "good", warn: "warn", bad: "bad", off: "off" };
+    const label = { good: "Estable", warn: "Atención", bad: "Riesgo", off: "Apagado" };
+    const rows = ["O", "B", "D", "E"].map(o => {
+      const t = totals(o, V);
+      return `<tr class="${o === state.opt ? "cur" : ""}"><td>${OPTS[o]}</td><td class="num">${fmt(t.b * 100)} %</td><td class="num">${fmt(t.P)} W</td><td class="num">${fmt(t.I, 2)} A</td><td><span class="chip ${rank[t.worst]}">${label[t.worst]}</span></td></tr>`;
+    }).join("");
+    return `<thead><tr><th>Solución</th><th>Luz</th><th>Potencia</th><th>Corriente</th><th>Estado</th></tr></thead><tbody>${rows}</tbody>`;
+  }
+
+  const $ = id => document.getElementById(id);
+
+  function render() {
+    const t = totals(state.opt, state.V);
+    $("gauge").innerHTML = gaugeSVG(state.V);
+    $("mI").textContent = fmt(t.I, 2);
+    $("mP").textContent = fmt(t.P);
+    $("mL").textContent = state.opt === "O" ? "—" : fmt(t.L);
+    $("mLu").textContent = state.opt === "O" ? "toda la ampolleta es calor" : state.opt === "B" ? "watts en resistencias" : state.opt === "D" ? "watts en convertidores" : "watts en drivers";
+    $("mB").textContent = `${fmt(t.b * 100)} %`;
+    $("scene").innerHTML = sceneSVG(t);
+    $("schem").innerHTML = schemSVG(t);
+    $("msgs").innerHTML = messages(t);
+    $("cmp").innerHTML = compareTable();
+    $("cmpV").textContent = `${fmt(state.V)} V`;
+    $("vOut").textContent = `${fmt(state.V)} V`;
+    $("vSlider").value = Math.round(state.V);
+    $("dimOut").textContent = `${fmt(state.dim * 100)} %`;
+    $("hdrUnit").textContent = state.unit;
+    document.querySelectorAll("#modeSeg .btn").forEach(b => b.setAttribute("aria-pressed", String(!state.cranking && Number(b.dataset.v) === Math.round(state.V))));
+    document.querySelectorAll("#unitSeg .btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.unit === state.unit)));
+    document.querySelectorAll(".opt").forEach(l => l.classList.toggle("on", l.querySelector("input").checked));
+  }
+
+  // Controles
+  $("switches").innerHTML = CIRC.map(c => `<label for="sw-${c.id}"><span>${c.nombre} <small style="color:var(--muted)">· ${c.det}</small></span><input class="toggle" type="checkbox" id="sw-${c.id}" checked></label>`).join("");
+  CIRC.forEach(c => $(`sw-${c.id}`).addEventListener("change", e => { state.sw[c.id] = e.target.checked; render(); }));
+  document.querySelectorAll('input[name="opt"]').forEach(r => r.addEventListener("change", e => { state.opt = e.target.value; render(); }));
+  document.querySelectorAll("#modeSeg .btn").forEach(b => b.addEventListener("click", () => { if (state.cranking) return; state.V = Number(b.dataset.v); render(); }));
+  document.querySelectorAll("#unitSeg .btn").forEach(b => b.addEventListener("click", () => { state.unit = b.dataset.unit; render(); }));
+  $("vSlider").addEventListener("input", e => { if (state.cranking) return; state.V = Number(e.target.value); render(); });
+  $("dim").addEventListener("input", e => { state.dim = Number(e.target.value) / 100; render(); });
+
+  // Secuencia de arranque: la red cae a ≈ 40 V oscilando, luego el generador la sube a 74 V
+  $("crank").addEventListener("click", () => {
+    if (state.cranking) return;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    state.cranking = true; $("crank").disabled = true; $("crank").textContent = "Arrancando…";
+    const t0 = performance.now(), from = state.V;
+    function step(now) {
+      const s = (now - t0) / 1000;
+      if (s < 0.4) state.V = from + (41 - from) * (s / 0.4);
+      else if (s < 2.6) state.V = 41 + (reduce ? 0 : 4 * Math.sin((s - 0.4) * 2 * Math.PI / 0.45));
+      else if (s < 3.6) state.V = 41 + (74 - 41) * (s - 2.6);
+      else { state.V = 74; state.cranking = false; $("crank").disabled = false; $("crank").textContent = "Arrancar el motor"; render(); return; }
+      state.V = Math.round(state.V * 10) / 10;
+      render();
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+
+  render();
+})();
+</script>
