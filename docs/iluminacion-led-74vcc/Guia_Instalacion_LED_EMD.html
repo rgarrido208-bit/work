@@ -1,0 +1,529 @@
+<title>Guía de Instalación LED EMD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: manual de taller. Barra fija con la opción y el avance; cada paso es una lámina ilustrada (siempre sobre papel claro) junto a sus instrucciones */
+:root {
+  --bg: #eef1f3;
+  --panel: #ffffff;
+  --ink: #172026;
+  --muted: #56616a;
+  --line: #ccd4da;
+  --accent: #1f5a8a;
+  --accent-soft: rgba(31, 90, 138, 0.10);
+  --ok: #2b7a48;
+  --ok-soft: rgba(43, 122, 72, 0.10);
+  --warn: #8a5a00;
+  --warn-soft: rgba(230, 168, 23, 0.16);
+  --warn-edge: #e6a817;
+  --plate: #f7f9fa;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171b; --panel: #182026; --ink: #e5ebef; --muted: #9aa7b1; --line: #2c3740;
+    --accent: #6fa8d8; --accent-soft: rgba(111, 168, 216, 0.14);
+    --ok: #5cbf83; --ok-soft: rgba(92, 191, 131, 0.12);
+    --warn: #f0c35a; --warn-soft: rgba(240, 195, 90, 0.12); --warn-edge: #e6a817;
+    --plate: #f3f6f8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171b; --panel: #182026; --ink: #e5ebef; --muted: #9aa7b1; --line: #2c3740;
+  --accent: #6fa8d8; --accent-soft: rgba(111, 168, 216, 0.14);
+  --ok: #5cbf83; --ok-soft: rgba(92, 191, 131, 0.12);
+  --warn: #f0c35a; --warn-soft: rgba(240, 195, 90, 0.12); --warn-edge: #e6a817;
+  --plate: #f3f6f8;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 18px; padding-block: 0 48px; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar-in { max-width: 1120px; margin: 0 auto; padding-inline: 18px; padding-block: 10px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { font: 600 15px var(--font-body); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab:focus-visible, .done input:focus-visible, a:focus-visible, .chip:focus-visible { outline: 3px solid var(--warn-edge); outline-offset: 2px; }
+.prog { display: flex; align-items: center; gap: 10px; min-width: 220px; flex: 1; max-width: 420px; }
+.prog-track { flex: 1; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.prog-fill { height: 100%; background: var(--ok); width: 0; transition: width .25s; }
+.prog-txt { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; }
+header.hero { padding-block: 28px 18px; display: grid; gap: 8px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(32px, 5vw, 48px); line-height: 1.02; margin: 0; letter-spacing: 0.005em; text-wrap: balance; }
+.lead { margin: 0; color: var(--muted); max-width: 68ch; font-size: 17px; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 28px; margin: 34px 0 12px; letter-spacing: 0.01em; }
+.prep { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .prep { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h3 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0 0 8px; letter-spacing: 0.02em; text-transform: uppercase; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.colors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 700px) { .colors { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sw { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.sw i { width: 34px; height: 12px; border-radius: 6px; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.sw b { display: block; font-weight: 600; }
+.sw small { color: var(--muted); }
+.plate { background: var(--plate); border: 1px solid #cfd8de; border-radius: 10px; padding: 8px; }
+.plate svg { width: 100%; height: auto; display: block; }
+.overview .plate svg { max-height: 420px; }
+.steps { display: grid; gap: 18px; counter-reset: s; }
+.step { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; scroll-margin-top: 80px; }
+.step.is-done { border-color: var(--ok); }
+@media (max-width: 860px) { .step { grid-template-columns: minmax(0, 1fr); } }
+.step-head { display: flex; align-items: baseline; gap: 12px; }
+.num { font-family: var(--font-display); font-weight: 700; font-size: 44px; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.step h3 { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.step ol { margin: 10px 0 12px; padding-left: 22px; display: grid; gap: 6px; }
+.box { border-radius: 8px; padding: 10px 12px; margin-top: 8px; border-left: 5px solid; }
+.box b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+.check { background: var(--ok-soft); border-color: var(--ok); }
+.check b { color: var(--ok); }
+.careful { background: var(--warn-soft); border-color: var(--warn-edge); }
+.careful b { color: var(--warn); }
+.done { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-weight: 600; cursor: pointer; }
+.done input { width: 22px; height: 22px; accent-color: var(--ok); }
+.jump { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip { font: 600 13px var(--font-mono); text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 2px 10px; background: var(--panel); }
+.chip.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.note { color: var(--muted); font-size: 14px; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+footer a { color: var(--accent); }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="tabs" role="group" aria-label="Opción a instalar">
+      <button class="tab" type="button" id="tabD" data-opt="D" aria-pressed="true">Opción D · caja MCI (adoptada)</button>
+      <button class="tab" type="button" id="tabB" data-opt="B" aria-pressed="false">Opción B · caja de resistencias</button>
+    </div>
+    <div class="prog" aria-live="polite">
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+      <span class="prog-txt" id="progTxt">0 de 12 pasos</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <h1>Cómo instalar la iluminación LED en un circuito de 74 V</h1>
+    <p class="lead" id="leadTxt"></p>
+    <div class="jump" id="jump" aria-label="Ir a un paso"></div>
+  </header>
+
+  <h2>Antes de empezar</h2>
+  <div class="prep">
+    <div class="card"><h3>Protección personal</h3><ul>
+      <li>Guantes dieléctricos clase 00 (500 V)</li>
+      <li>Lentes de seguridad</li>
+      <li>Zapatos de seguridad y ropa de algodón</li>
+      <li>Candado y tarjeta de bloqueo personal</li>
+    </ul></div>
+    <div class="card"><h3>Herramientas</h3><ul>
+      <li>Multímetro CAT III y pinza amperimétrica de corriente continua</li>
+      <li>Megóhmetro de 500 V</li>
+      <li>Fuente de continua regulable de 0 a 100 V (solo banco)</li>
+      <li>Destornilladores aislados, pelacables y crimpadora de punteras</li>
+      <li>Cautín, estaño, termorretráctil y pistola de calor</li>
+      <li>Taladro, brocas y llave para prensaestopas M16</li>
+    </ul></div>
+    <div class="card"><h3>Materiales por caja</h3><ul id="matList"></ul></div>
+  </div>
+
+  <h2>Código de colores</h2>
+  <div class="colors">
+    <div class="sw"><i style="background:#7b4a24"></i><span><b>Café = +74 V</b><small>entrada a la caja (X1:1)</small></span></div>
+    <div class="sw"><i style="background:#1d5bb5"></i><span><b>Azul = −74 V</b><small>entrada a la caja (X1:2)</small></span></div>
+    <div class="sw"><i style="background:#c9302c"></i><span><b id="redLbl">Rojo = +24 V</b><small>salida a la luminaria</small></span></div>
+    <div class="sw"><i style="background:#1b1b1b"></i><span><b id="blkLbl">Negro = −24 V</b><small>retorno de la luminaria</small></span></div>
+  </div>
+
+  <h2>Así queda conectado un circuito</h2>
+  <div class="overview"><div class="plate" id="overview"></div></div>
+  <p class="note" id="overNote"></p>
+
+  <h2>Paso a paso</h2>
+  <div class="steps" id="steps"></div>
+
+  <footer>
+    <span>Repite los 12 pasos en cada uno de los 8 circuitos de la locomotora. Los números de caja, borne y cable siguen el expediente técnico.</span>
+    <span>Documentos: <a href="https://claude.ai/code/artifact/5e7e6c1c-bcdc-48ff-9433-8c208ac8b121" target="_blank" rel="noopener">Expediente técnico</a> · <a href="https://claude.ai/code/artifact/c5c4c168-3fb1-4e36-91c0-0a34098086b1" target="_blank" rel="noopener">Memoria de cálculo</a> · <a href="https://claude.ai/code/artifact/cac5ccec-2cbc-4676-9ce1-b3eb6c0c1ef6" target="_blank" rel="noopener">Opción B</a> · <a href="https://claude.ai/artifact/3ARRRQWAxQqABQfKZRss78" target="_blank" rel="noopener">Simulador</a></span>
+    <span>Las marcas de avance se guardan solo en este navegador.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // Colores reales de los conductores y piezas (las láminas siempre van sobre papel claro)
+  const C = { cafe: "#7b4a24", azul: "#1d5bb5", rojo: "#c9302c", negro: "#1b1b1b", gris: "#8c969e", ink: "#1d2328", mute: "#5d6770", caja: "#b9c1c8", fondo: "#dfe4e8", borne: "#ece6d2", borneF: "#5c6670", conv: "#2f6db3", ok: "#2b7a48", warn: "#d99a00", led: "#ffd84a", cobre: "#c88a3a", al: "#c7cdd2", paper: "#f7f9fa" };
+  const F = "IBM Plex Sans, Segoe UI, sans-serif", FM = "IBM Plex Mono, Menlo, monospace";
+  const T = (x, y, s, o = {}) => `<text x="${x}" y="${y}" font-family="${o.mono ? FM : F}" font-size="${o.fs || 13}" font-weight="${o.fw || 500}" fill="${o.c || C.ink}" text-anchor="${o.a || "start"}">${s}</text>`;
+  const W = (d, c, w = 5) => `<path d="${d}" fill="none" stroke="#00000030" stroke-width="${w + 2}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const svg = (inner, h = 300, label = "") => `<svg viewBox="0 0 480 ${h}" role="img" aria-label="${label}"><rect width="480" height="${h}" fill="${C.paper}"/>${inner}</svg>`;
+  const screw = (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#d9dde0" stroke="#6b747b"/><line x1="${x - 3}" y1="${y}" x2="${x + 3}" y2="${y}" stroke="#6b747b" stroke-width="1.5"/>`;
+  const term = (x, y, lbl, fuse) => `<rect x="${x}" y="${y}" width="28" height="70" rx="3" fill="${fuse ? C.borneF : C.borne}" stroke="#4b545b"/>${fuse ? `<rect x="${x + 6}" y="${y + 20}" width="16" height="30" rx="2" fill="#2a2f33"/><text x="${x + 14}" y="${y + 39}" text-anchor="middle" font-family="${F}" font-size="9" fill="#fff">F</text>` : ""}${screw(x + 14, y + 9)}${screw(x + 14, y + 61)}${T(x + 14, y + 86, lbl, { fs: 11, a: "middle", fw: 600 })}`;
+  const rail = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="10" fill="#c3c9ce" stroke="#7d868d"/>`;
+  const encl = (x, y, w, h, lbl) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${C.caja}" stroke="#5d666d" stroke-width="2"/><rect x="${x + 10}" y="${y + 10}" width="${w - 20}" height="${h - 20}" rx="6" fill="${C.fondo}"/>${lbl ? T(x + 16, y + h - 16, lbl, { fs: 12, fw: 600, c: C.mute }) : ""}`;
+  const gland = (x, y, vert) => vert ? `<rect x="${x - 9}" y="${y}" width="18" height="16" rx="3" fill="#a9b0b5" stroke="#5d666d"/>` : `<rect x="${x}" y="${y - 9}" width="16" height="18" rx="3" fill="#a9b0b5" stroke="#5d666d"/>`;
+  const conv = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${C.conv}" stroke="#1d466f" stroke-width="2"/>${T(x + w / 2, y + h / 2 - 4, "Convertidor", { fs: 13, fw: 600, a: "middle", c: "#fff" })}${T(x + w / 2, y + h / 2 + 13, "RSD-30H-24", { fs: 11, a: "middle", c: "#dce9f7" })}`;
+  const tvs = (x, y) => `<line x1="${x}" y1="${y - 14}" x2="${x}" y2="${y - 6}" stroke="#777" stroke-width="2"/><rect x="${x - 6}" y="${y - 6}" width="12" height="20" rx="3" fill="#222"/><rect x="${x - 6}" y="${y - 6}" width="12" height="4" fill="#bbb"/><line x1="${x}" y1="${y + 14}" x2="${x}" y2="${y + 22}" stroke="#777" stroke-width="2"/>`;
+  const diode = (x, y) => `<line x1="${x - 18}" y1="${y}" x2="${x - 10}" y2="${y}" stroke="#777" stroke-width="2"/><rect x="${x - 10}" y="${y - 6}" width="22" height="12" rx="3" fill="#222"/><rect x="${x + 6}" y="${y - 6}" width="4" height="12" fill="#e9e9e9"/><line x1="${x + 12}" y1="${y}" x2="${x + 20}" y2="${y}" stroke="#777" stroke-width="2"/>`;
+  const resistor = (x, y, w, lbl) => `<rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="#d4b65a" stroke="#7a6420" stroke-width="1.5"/>${[0.2, 0.4, 0.6, 0.8].map(f => `<line x1="${x + w * f}" y1="${y + 3}" x2="${x + w * f}" y2="${y + 31}" stroke="#a88a2f"/>`).join("")}${T(x + w / 2, y + 22, lbl, { fs: 11, fw: 600, a: "middle" })}`;
+  const tco = (x, y) => `<rect x="${x}" y="${y}" width="22" height="10" rx="5" fill="#e3e3e3" stroke="#777"/>${T(x + 11, y + 22, "TCO", { fs: 9, a: "middle", c: C.mute })}`;
+  const strip = (x, y, len, cuts = true) => { let s = `<rect x="${x}" y="${y}" width="${len}" height="12" rx="2" fill="#fafafa" stroke="#999"/>`; for (let i = x + 8; i < x + len - 6; i += 14) s += `<rect x="${i}" y="${y + 3}" width="7" height="6" fill="${C.led}" stroke="#c9a400" stroke-width=".6"/>`; if (cuts) for (let i = x + 56; i < x + len; i += 56) s += `<line x1="${i}" y1="${y - 6}" x2="${i}" y2="${y + 18}" stroke="#999" stroke-dasharray="2 2"/>`; s += `<rect x="${x + 1}" y="${y + 2}" width="5" height="3" fill="${C.cobre}"/><rect x="${x + 1}" y="${y + 7}" width="5" height="3" fill="${C.cobre}"/>`; return s; };
+  const meter = (x, y, val, small) => { const w = small ? 74 : 92, h = small ? 104 : 128; return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="#f0c43a" stroke="#6b5a12" stroke-width="2"/><rect x="${x + 7}" y="${y + 8}" width="${w - 14}" height="${small ? 30 : 36}" rx="4" fill="#cfe2c8" stroke="#55644f"/>${T(x + w / 2, y + (small ? 29 : 32), val, { mono: true, fs: small ? 15 : 18, a: "middle" })}<circle cx="${x + w / 2}" cy="${y + (small ? 62 : 76)}" r="${small ? 14 : 18}" fill="#333"/><line x1="${x + w / 2}" y1="${y + (small ? 62 : 76)}" x2="${x + w / 2 + (small ? 8 : 10)}" y2="${y + (small ? 52 : 64)}" stroke="#ddd" stroke-width="3"/><circle cx="${x + w / 2 - 14}" cy="${y + h - 14}" r="5" fill="${C.rojo}"/><circle cx="${x + w / 2 + 14}" cy="${y + h - 14}" r="5" fill="${C.negro}"/>`; };
+  const probe = (x1, y1, x2, y2, c) => `${W(`M${x1} ${y1}C${x1} ${y1 + 40} ${x2} ${y2 - 40} ${x2} ${y2}`, c, 3)}<line x1="${x2}" y1="${y2}" x2="${x2}" y2="${y2 + 12}" stroke="#555" stroke-width="3"/>`;
+  const tape = (x, y, c) => `<rect x="${x - 5}" y="${y - 7}" width="10" height="14" rx="2" fill="${c}" stroke="#0003"/>`;
+  const arrow = (x1, y1, x2, y2, c = C.ok) => `<defs><marker id="ah${x1}${y1}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker></defs><path d="M${x1} ${y1}L${x2} ${y2}" stroke="${c}" stroke-width="3" fill="none" marker-end="url(#ah${x1}${y1})"/>`;
+  const badge = (x, y, ok, s) => `<rect x="${x}" y="${y}" width="${s.length * 7.2 + 26}" height="24" rx="12" fill="${ok ? C.ok : C.warn}"/><text x="${x + 13}" y="${y + 16}" font-family="${F}" font-size="12.5" font-weight="600" fill="#fff">${s}</text>`;
+  const lum = (x, y, w, on, numTxt) => `<rect x="${x}" y="${y}" width="${w}" height="46" rx="6" fill="#3a434a" stroke="#222"/><rect x="${x + 6}" y="${y + 6}" width="${w - 12}" height="34" rx="3" fill="${on ? "#fff7d6" : "#59636b"}"/>${numTxt ? T(x + w / 2, y + 30, numTxt, { fs: 20, fw: 700, a: "middle", c: on ? "#1b1b1b" : "#8b959c" }) : ""}`;
+
+  // ---------- Láminas ----------
+  const FIG = {
+    overviewD: () => svg(`
+      ${T(20, 26, "Panel de cabina", { fs: 12, fw: 600, c: C.mute })}
+      <rect x="20" y="36" width="70" height="56" rx="6" fill="#4b545b"/><rect x="40" y="46" width="30" height="36" rx="4" fill="#20262a"/><rect x="48" y="50" width="14" height="14" rx="2" fill="#d9dde0"/>${T(55, 108, "IE-01", { fs: 12, fw: 600, a: "middle" })}
+      ${W("M90 56 H150 V120", C.gris, 4)}${W("M90 72 H138 V132", C.gris, 4)}
+      ${T(160, 100, "cables existentes", { fs: 11, c: C.mute })}
+      ${tape(150, 128, C.cafe)}${tape(138, 140, C.azul)}
+      ${W("M150 138 V176 H182", C.cafe)}${W("M138 150 V196 H182", C.azul)}
+      ${encl(180, 140, 190, 140, "Caja MCI-01")}
+      ${gland(170, 186)}
+      ${rail(196, 230, 158)}
+      <rect x="198" y="164" width="22" height="50" rx="3" fill="${C.borneF}"/><rect x="224" y="164" width="22" height="50" rx="3" fill="${C.borne}" stroke="#4b545b"/>
+      ${T(222, 158, "X1", { fs: 11, fw: 600, a: "middle" })}
+      ${conv(256, 162, 70, 56)}
+      <rect x="332" y="164" width="14" height="50" rx="2" fill="${C.borneF}"/><rect x="348" y="164" width="14" height="50" rx="2" fill="${C.borne}" stroke="#4b545b"/>
+      ${T(347, 158, "X2", { fs: 11, fw: 600, a: "middle" })}
+      ${W("M362 176 H400 V96 H420", C.rojo)}${W("M362 200 H410 V120 H420", C.negro)}
+      ${W("M362 182 H392 V226 H420", C.rojo, 4)}${W("M362 206 H384 V250 H420", C.negro, 4)}
+      ${gland(372, 176)}${gland(372, 214)}
+      ${lum(420, 82, 52, true, "49")}${lum(420, 222, 52, true, "49")}
+      ${T(446, 146, "L01.1", { fs: 11, fw: 600, a: "middle" })}${T(446, 286, "L01.2", { fs: 11, fw: 600, a: "middle" })}
+    `, 300, "Circuito con caja MCI: cables existentes a la caja y dos luminarias"),
+    overviewB: () => svg(`
+      ${T(20, 26, "Panel de cabina", { fs: 12, fw: 600, c: C.mute })}
+      <rect x="20" y="36" width="70" height="56" rx="6" fill="#4b545b"/><rect x="40" y="46" width="30" height="36" rx="4" fill="#20262a"/><rect x="48" y="50" width="14" height="14" rx="2" fill="#d9dde0"/>${T(55, 108, "IE-01", { fs: 12, fw: 600, a: "middle" })}
+      ${W("M90 56 H150 V120", C.gris, 4)}${W("M90 72 H138 V132", C.gris, 4)}
+      ${T(160, 100, "cables existentes", { fs: 11, c: C.mute })}
+      ${tape(150, 128, C.cafe)}${tape(138, 140, C.azul)}
+      ${W("M150 138 V176 H182", C.cafe)}${W("M138 150 V196 H182", C.azul)}
+      ${encl(180, 140, 190, 140, "Caja CR-01")}
+      ${gland(170, 186)}
+      <rect x="198" y="164" width="22" height="50" rx="3" fill="${C.borne}" stroke="#4b545b"/>${T(209, 158, "X1", { fs: 11, fw: 600, a: "middle" })}
+      ${diode(250, 172)}${resistor(276, 158, 62, "110 Ω")}
+      ${diode(250, 214)}${resistor(276, 200, 62, "110 Ω")}
+      <rect x="348" y="164" width="14" height="50" rx="2" fill="${C.borne}" stroke="#4b545b"/>${T(355, 158, "X2", { fs: 11, fw: 600, a: "middle" })}
+      ${W("M362 176 H400 V96 H420", C.rojo)}${W("M362 200 H410 V120 H420", C.negro)}
+      ${W("M362 182 H392 V226 H420", C.rojo, 4)}${W("M362 206 H384 V250 H420", C.negro, 4)}
+      ${gland(372, 176)}${gland(372, 214)}
+      ${lum(420, 82, 52, true, "49")}${lum(420, 222, 52, true, "49")}
+      ${T(446, 146, "L01.1", { fs: 11, fw: 600, a: "middle" })}${T(446, 286, "L01.2", { fs: 11, fw: 600, a: "middle" })}
+    `, 300, "Circuito con caja de resistencias: cables existentes a la caja y dos luminarias"),
+    medir: () => svg(`
+      <rect x="40" y="40" width="140" height="90" rx="10" fill="#3a434a"/><circle cx="110" cy="85" r="26" fill="#59636b"/>${T(110, 30, "Portalámparas sin ampolleta", { fs: 12, a: "middle", c: C.mute })}
+      ${W("M100 110 C 120 190, 200 200, 250 210", C.gris, 4)}${W("M120 110 C 150 170, 220 240, 250 246", C.gris, 4)}
+      ${tape(240, 209, C.cafe)}${tape(240, 245, C.azul)}
+      ${T(262, 214, "+ (cinta café)", { fs: 12, fw: 600 })}${T(262, 250, "− (cinta azul)", { fs: 12, fw: 600 })}
+      ${meter(330, 30, "+66.2 V")}
+      ${probe(406, 158, 236, 196, C.rojo)}${probe(434, 158, 236, 232, C.negro)}
+      ${badge(150, 270, true, "Positivo: la punta roja está en +")}
+    `, 300, "Multímetro midiendo los dos cables del portalámparas"),
+    bloquear: () => svg(`
+      ${T(30, 30, "1. Interruptor del circuito", { fs: 13, fw: 600 })}
+      <rect x="30" y="44" width="130" height="150" rx="8" fill="#4b545b"/><rect x="72" y="70" width="46" height="96" rx="6" fill="#20262a"/><rect x="80" y="122" width="30" height="36" rx="4" fill="#d9dde0"/>${T(95, 186, "OFF", { fs: 12, fw: 700, a: "middle", c: "#fff" })}
+      ${T(200, 30, "2. Interruptor de batería", { fs: 13, fw: 600 })}
+      <rect x="200" y="44" width="130" height="150" rx="8" fill="#4b545b"/><path d="M265 160 L300 96" stroke="#d9dde0" stroke-width="12" stroke-linecap="round"/><circle cx="265" cy="160" r="10" fill="#20262a"/>${T(265, 186, "ABIERTO", { fs: 12, fw: 700, a: "middle", c: "#fff" })}
+      <path d="M318 100 a 16 16 0 0 1 32 0 v 14" fill="none" stroke="#999" stroke-width="5"/><rect x="310" y="112" width="48" height="38" rx="5" fill="${C.rojo}"/>
+      <path d="M350 140 L392 170" stroke="#777" stroke-width="2"/><rect x="380" y="160" width="76" height="96" rx="4" fill="#fff" stroke="${C.rojo}" stroke-width="3"/>${T(418, 186, "PELIGRO", { fs: 12, fw: 700, a: "middle", c: C.rojo })}${T(418, 204, "NO", { fs: 12, fw: 700, a: "middle" })}${T(418, 220, "OPERAR", { fs: 12, fw: 700, a: "middle" })}${T(418, 240, "Nombre", { fs: 10, a: "middle", c: C.mute })}
+      ${meter(40, 210, "0.0 V", true)}${T(124, 252, "3. Mide de nuevo:", { fs: 12, fw: 600 })}${T(124, 270, "debe marcar 0 V", { fs: 12 })}
+    `, 300, "Interruptor del circuito y de batería abiertos, con candado y tarjeta"),
+    retirar: () => svg(`
+      <rect x="40" y="50" width="150" height="100" rx="10" fill="#3a434a"/><circle cx="115" cy="100" r="28" fill="#59636b"/>
+      <g transform="translate(250 50) rotate(15)"><path d="M0 0 a 28 34 0 1 1 56 0 v 22 h -56 z" fill="#fff4cf" stroke="#999"/><rect x="6" y="22" width="44" height="20" fill="#b9b9b9"/></g>
+      ${T(320, 44, "Ampolleta 74 V", { fs: 12, c: C.mute })}
+      ${arrow(200, 80, 245, 70, C.mute)}
+      ${W("M100 150 C 110 210, 160 220, 220 226", C.gris, 4)}${W("M130 150 C 150 200, 200 250, 220 262", C.gris, 4)}
+      ${tape(214, 225, C.cafe)}${tape(214, 261, C.azul)}
+      ${T(232, 230, "+ marcado", { fs: 12, fw: 600 })}${T(232, 266, "− marcado", { fs: 12, fw: 600 })}
+      <rect x="330" y="200" width="120" height="60" rx="8" fill="#fff" stroke="${C.warn}" stroke-width="2"/>${T(390, 222, "¿Reóstato o", { fs: 12, fw: 600, a: "middle" })}${T(390, 238, "resistencia?", { fs: 12, fw: 600, a: "middle" })}${T(390, 254, "Puentéalo", { fs: 12, a: "middle", c: C.warn })}
+    `, 300, "Portalámparas sin ampolleta y dos cables marcados"),
+    armarD: () => svg(`
+      ${encl(20, 20, 440, 250, "Caja MCI vista por dentro")}
+      ${rail(40, 92, 400)}
+      ${term(50, 62, "X1:1", true)}${term(84, 62, "X1:2", false)}
+      ${tvs(136, 120)}${T(136, 166, "D1", { fs: 11, fw: 600, a: "middle" })}
+      ${W("M64 70 V48 H136 V106", C.cafe, 3)}${W("M98 122 V150 H136 V142", C.azul, 3)}
+      ${conv(170, 56, 130, 108)}
+      ${T(176, 180, "+Vin −Vin", { fs: 10, c: C.mute })}${T(296, 180, "+V −V", { fs: 10, a: "end", c: C.mute })}
+      ${W("M64 132 V200 H182 V164", C.cafe, 4)}${W("M98 132 V214 H198 V164", C.azul, 4)}
+      ${term(330, 62, "X2:1", true)}${term(362, 62, "X2:2", false)}${term(394, 62, "X2:3", true)}${term(426, 62, "X2:4", false)}
+      ${W("M272 164 V226 H344 V132", C.rojo, 4)}${W("M288 164 V238 H376 V132", C.negro, 4)}
+      ${W("M344 70 V44 H408 V70", C.rojo, 3)}${W("M376 132 V150 H440 V132", C.negro, 3)}
+      ${T(240, 284, "Convertidor atornillado al fondo con pasta térmica", { fs: 11.5, a: "middle", c: C.mute })}
+    `, 290, "Interior de la caja MCI con bornes, TVS, convertidor y cables de colores"),
+    armarB: () => svg(`
+      ${encl(20, 20, 440, 250, "Caja CR vista por dentro")}
+      ${term(40, 70, "X1:1", false)}${term(40, 160, "X1:2", false)}
+      ${tvs(92, 140)}${T(108, 146, "D1", { fs: 11, fw: 600 })}
+      <rect x="120" y="70" width="40" height="18" rx="9" fill="#e7e7e7" stroke="#777"/>${T(140, 104, "F 1 A", { fs: 10.5, a: "middle", c: C.mute })}
+      <rect x="120" y="150" width="40" height="18" rx="9" fill="#e7e7e7" stroke="#777"/>${T(140, 184, "F 1 A", { fs: 10.5, a: "middle", c: C.mute })}
+      ${diode(196, 79)}${diode(196, 159)}
+      ${T(206, 66, "banda →", { fs: 10.5, c: C.mute })}
+      ${resistor(232, 62, 92, "110 Ω 50 W")}${tco(250, 100)}
+      ${resistor(232, 142, 92, "110 Ω 50 W")}${tco(250, 180)}
+      ${term(360, 50, "X2:1", false)}${term(392, 50, "X2:2", false)}${term(360, 150, "X2:3", false)}${term(392, 150, "X2:4", false)}
+      ${W("M68 79 H120", C.cafe, 3)}${W("M68 79 H100 V159 H120", C.cafe, 3)}
+      ${W("M160 79 H178", C.cafe, 3)}${W("M160 159 H178", C.cafe, 3)}
+      ${W("M216 79 H232", C.rojo, 3)}${W("M216 159 H232", C.rojo, 3)}
+      ${W("M324 79 H374 V60", C.rojo, 3)}${W("M324 159 H374 V160", C.rojo, 3)}
+      ${W("M406 112 V128 H340 V230 H54 V222", C.negro, 3)}${W("M406 212 V230", C.negro, 3)}
+      ${T(240, 284, "Resistencias y fusibles térmicos atornillados al fondo", { fs: 11.5, a: "middle", c: C.mute })}
+    `, 290, "Interior de la caja de resistencias con fusibles, diodos, resistencias y bornes"),
+    bancoD: () => svg(`
+      <rect x="20" y="60" width="120" height="110" rx="8" fill="#39424a"/><rect x="34" y="72" width="92" height="34" rx="4" fill="#111"/>${T(80, 96, "74.0 V", { mono: true, fs: 18, a: "middle", c: "#7CFC7C" })}<circle cx="56" cy="134" r="12" fill="#666"/><circle cx="104" cy="134" r="12" fill="#666"/><circle cx="44" cy="160" r="5" fill="${C.rojo}"/><circle cx="116" cy="160" r="5" fill="${C.negro}"/>${T(80, 52, "Fuente de banco", { fs: 12, a: "middle", c: C.mute })}
+      ${W("M44 160 V210 H170", C.cafe, 4)}${W("M116 160 V196 H170", C.azul, 4)}
+      ${encl(170, 140, 150, 110, "Caja MCI")}
+      ${W("M320 180 H350 V120 H380", C.rojo, 4)}${W("M320 200 H360 V136 H380", C.negro, 4)}
+      ${strip(380, 116, 84, false)}${T(422, 100, "Tira de prueba", { fs: 11.5, a: "middle", c: C.mute })}
+      ${meter(372, 160, "24.0 V", true)}
+      ${probe(432, 250, 330, 176, C.rojo)}${probe(460, 250, 330, 204, C.negro)}
+      ${badge(20, 262, true, "Prueba también a 45 V y a 95 V: siempre 24 V")}
+    `, 300, "Fuente de banco a 74 V, caja MCI y multímetro marcando 24 V"),
+    bancoB: () => svg(`
+      <rect x="20" y="40" width="120" height="110" rx="8" fill="#39424a"/><rect x="34" y="52" width="92" height="34" rx="4" fill="#111"/>${T(80, 76, "74.0 V", { mono: true, fs: 18, a: "middle", c: "#7CFC7C" })}<circle cx="44" cy="140" r="5" fill="${C.rojo}"/><circle cx="116" cy="140" r="5" fill="${C.negro}"/>
+      ${W("M44 140 V180 H150", C.cafe, 4)}
+      ${resistor(150, 164, 80, "110 Ω")}
+      ${W("M230 181 H250", C.rojo, 4)}
+      ${strip(250, 175, 98, false)}${W("M348 181 H360 V221 H250", C.negro, 3)}${strip(250, 215, 98, false)}
+      ${W("M250 227 H200 V260 H116 V140", C.negro, 4)}
+      ${meter(380, 30, "26.1 V", true)}${probe(406, 134, 158, 158, C.rojo)}${probe(434, 134, 224, 158, C.negro)}
+      ${T(190, 150, "≈ 26 V en la resistencia", { fs: 12, fw: 600, a: "middle" })}
+      ${T(300, 252, "≈ 24 V en cada tramo", { fs: 12, fw: 600, a: "middle" })}
+      ${badge(20, 268, true, "A 66 V la luz baja un poco: es normal en la opción B")}
+    `, 300, "Fuente a 74 V, resistencia y dos tramos LED en serie con sus tensiones"),
+    montar: () => svg(`
+      <rect x="20" y="20" width="440" height="250" fill="#a7b0b7"/>${T(36, 44, "Pared metálica de la locomotora", { fs: 12, fw: 600, c: "#2b3237" })}
+      ${encl(120, 70, 170, 130, "")}
+      ${[[132, 82], [278, 82], [132, 188], [278, 188]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#555"/>`).join("")}
+      ${gland(160, 200, true)}${gland(205, 200, true)}${gland(250, 200, true)}
+      ${T(205, 238, "prensaestopas hacia abajo", { fs: 12, a: "middle", fw: 600 })}
+      ${lum(360, 90, 70, false, "49")}
+      ${W("M300 140 H350", C.ok, 2)}${T(325, 132, "≤ 6 m", { fs: 13, fw: 700, a: "middle", c: C.ok })}
+      ${T(205, 138, "4 pernos M6", { fs: 12, a: "middle", c: C.ink })}${T(205, 154, "con golilla de presión", { fs: 11, a: "middle", c: C.mute })}
+      ${badge(240, 250, false, "Lejos del escape y del agua")}
+    `, 290, "Caja atornillada a la pared con prensaestopas hacia abajo, a menos de 6 m de la luminaria"),
+    entrada: () => svg(`
+      ${W("M20 90 H120", C.gris, 5)}${W("M20 170 H120", C.gris, 5)}${tape(60, 90, C.cafe)}${tape(60, 170, C.azul)}
+      ${T(20, 72, "Cable existente +", { fs: 12, fw: 600 })}${T(20, 200, "Cable existente −", { fs: 12, fw: 600 })}
+      <rect x="120" y="80" width="40" height="20" rx="4" fill="#3b6fb1"/><rect x="120" y="160" width="40" height="20" rx="4" fill="#3b6fb1"/>
+      ${T(140, 122, "empalme + termorretráctil", { fs: 10.5, a: "middle", c: C.mute })}
+      ${W("M160 90 H250 V110 H300", C.cafe, 5)}${W("M160 170 H250 V150 H300", C.azul, 5)}
+      ${T(200, 82, "café", { fs: 12, fw: 600, c: C.cafe })}${T(200, 190, "azul", { fs: 12, fw: 600, c: C.azul })}
+      ${gland(282, 110)}${gland(282, 150)}
+      ${encl(296, 40, 170, 200, "")}
+      ${term(330, 80, "X1:1", true)}${term(372, 80, "X1:2", false)}
+      ${W("M300 110 H316 V89 H344", C.cafe, 4)}${W("M300 150 H360 V89 H386", C.azul, 4)}
+      ${badge(190, 256, false, "Ningún cable a la caja ni al chasis")}
+    `, 290, "Empalme de los cables existentes con el cable café y azul hasta X1"),
+    luminariaD: () => svg(`
+      ${strip(30, 50, 420)}${T(30, 36, "Corta solo en las marcas de tijera (cada 5 cm)", { fs: 12, fw: 600 })}
+      <path d="M86 40 l10 -12 m-10 0 l10 12" stroke="${C.ink}" stroke-width="2"/>
+      ${W("M36 52 H10 V120 H40", C.rojo, 3)}${W("M36 59 H16 V136 H40", C.negro, 3)}
+      ${T(46, 124, "rojo al +24", { fs: 12, fw: 600, c: C.rojo })}${T(46, 140, "negro al −24", { fs: 12, fw: 600 })}
+      <path d="M200 120 h240 v34 h-240 z" fill="${C.al}" stroke="#7d868d"/><path d="M204 124 h232 v8 h-232z" fill="#fff" opacity=".8"/>${strip(210, 134, 220, false)}
+      ${T(320, 176, "Tira pegada y atornillada dentro del perfil", { fs: 12, a: "middle", c: C.mute })}
+      ${lum(140, 200, 200, true, "49")}${T(240, 268, "Difusor puesto: sin puntos de luz", { fs: 12, a: "middle", fw: 600 })}
+    `, 290, "Tira LED cortada en la marca, cables soldados y montada en el perfil"),
+    luminariaB: () => svg(`
+      ${T(24, 34, "Dos tramos iguales en serie", { fs: 13, fw: 600 })}
+      ${strip(40, 70, 180, false)}${strip(260, 70, 180, false)}
+      ${T(130, 60, "Tramo 1", { fs: 12, a: "middle", c: C.mute })}${T(350, 60, "Tramo 2", { fs: 12, a: "middle", c: C.mute })}
+      ${W("M222 79 C 240 110, 242 110, 262 73", C.negro, 3)}
+      ${T(242, 130, "− del 1 al + del 2", { fs: 12, fw: 600, a: "middle" })}
+      ${W("M42 72 H20 V170 H60", C.rojo, 3)}${W("M440 79 H462 V190 H60", C.negro, 3)}
+      ${T(66, 174, "rojo +L al + del tramo 1", { fs: 12, fw: 600, c: C.rojo })}${T(66, 210, "negro −L al − del tramo 2", { fs: 12, fw: 600 })}
+      ${badge(24, 240, false, "Nunca en paralelo: en la opción B van en serie")}
+    `, 290, "Dos tramos de tira LED conectados en serie"),
+    salidas: () => svg(`
+      ${encl(20, 40, 170, 200, "")}
+      ${term(40, 80, "X2:1", true)}${term(74, 80, "X2:2", false)}${term(108, 80, "X2:3", true)}${term(142, 80, "X2:4", false)}
+      ${W("M54 89 V60 H210 V80 H330", C.rojo, 4)}${W("M88 140 V170 H220 V100 H330", C.negro, 4)}
+      ${W("M122 89 V66 H240 V190 H330", C.rojo, 4)}${W("M156 140 V178 H250 V210 H330", C.negro, 4)}
+      ${gland(190, 120)}${gland(190, 180)}
+      ${lum(330, 70, 120, true, "49")}${lum(330, 180, 120, true, "49")}
+      ${T(390, 136, "L01.1", { fs: 12, fw: 600, a: "middle" })}${T(390, 246, "L01.2", { fs: 12, fw: 600, a: "middle" })}
+      ${T(105, 268, "Rojo al borne con fusible · negro al borne simple", { fs: 12, fw: 600, a: "middle" })}
+    `, 290, "Bornes de salida conectados con cables rojo y negro a dos luminarias"),
+    aislamiento: () => svg(`
+      ${encl(20, 40, 170, 180, "")}
+      ${term(60, 80, "X1:1", true)}${term(100, 80, "X1:2", false)}
+      ${W("M74 89 V64 H114 V89", C.ok, 3)}${T(94, 56, "puente", { fs: 11, fw: 600, a: "middle", c: C.ok })}
+      <rect x="260" y="40" width="170" height="130" rx="10" fill="#c43c2c"/><rect x="276" y="54" width="138" height="40" rx="4" fill="#f3f0d8"/>${T(345, 81, "> 200 MΩ", { mono: true, fs: 18, a: "middle" })}${T(345, 120, "MEGÓHMETRO 500 V", { fs: 11, fw: 700, a: "middle", c: "#fff" })}
+      ${probe(300, 170, 94, 72, C.rojo)}${probe(390, 170, 160, 240, C.negro)}
+      <rect x="20" y="236" width="440" height="14" fill="#a7b0b7"/>${T(150, 270, "Chasis", { fs: 12, fw: 600 })}
+      ${badge(250, 196, true, "Mínimo 20 MΩ")}
+    `, 290, "Megóhmetro entre los bornes unidos con un puente y el chasis"),
+    energizarD: () => svg(`
+      ${meter(20, 30, "74.0 V", true)}${T(57, 158, "X1:1 – X1:2", { fs: 12, fw: 600, a: "middle" })}${T(57, 174, "64–67 V o 73–75 V", { fs: 11, a: "middle", c: C.mute })}
+      ${meter(170, 30, "24.0 V", true)}${T(207, 158, "X2:1 – X2:2", { fs: 12, fw: 600, a: "middle" })}${T(207, 174, "24 V ± 0,3 V", { fs: 11, a: "middle", c: C.mute })}
+      ${meter(320, 30, "23.8 V", true)}${T(357, 158, "En la luminaria", { fs: 12, fw: 600, a: "middle" })}${T(357, 174, "≥ 23,3 V", { fs: 11, a: "middle", c: C.mute })}
+      ${lum(140, 200, 200, true, "49")}
+      ${badge(20, 262, true, "Numeradores: 0,37 A en la entrada a 74 V")}
+    `, 300, "Tres multímetros con 74 V, 24 V y 23,8 V"),
+    energizarB: () => svg(`
+      ${meter(20, 30, "74.0 V", true)}${T(57, 158, "X1:1 – X1:2", { fs: 12, fw: 600, a: "middle" })}
+      ${meter(170, 30, "26.1 V", true)}${T(207, 158, "En la resistencia", { fs: 12, fw: 600, a: "middle" })}
+      ${meter(320, 30, "24.0 V", true)}${T(357, 158, "En cada tramo", { fs: 12, fw: 600, a: "middle" })}
+      ${lum(140, 190, 200, true, "49")}
+      ${badge(20, 262, true, "Numerador: 0,22 a 0,26 A a 74 V")}
+    `, 300, "Tres multímetros con 74 V, 26 V en la resistencia y 24 V en cada tramo"),
+    final: () => svg(`
+      <rect x="20" y="30" width="200" height="110" rx="10" fill="#fff" stroke="#c8d0d6"/>${T(120, 58, "Arranque del motor", { fs: 13, fw: 600, a: "middle" })}${T(120, 80, "La luz puede parpadear", { fs: 12, a: "middle", c: C.mute })}${T(120, 98, "y debe volver sola", { fs: 12, a: "middle", c: C.mute })}${badge(58, 108, true, "Se recupera")}
+      <rect x="250" y="30" width="210" height="110" rx="10" fill="#fff" stroke="#c8d0d6"/>${T(355, 58, "Detector de tierra", { fs: 13, fw: 600, a: "middle" })}<circle cx="355" cy="92" r="18" fill="#3a434a"/><circle cx="355" cy="92" r="10" fill="#555"/>${T(355, 128, "sin indicación de falla", { fs: 12, a: "middle", c: C.mute })}
+      <rect x="20" y="160" width="200" height="110" rx="10" fill="#fff" stroke="#c8d0d6"/>${T(120, 188, "Temperatura tras 2 h", { fs: 13, fw: 600, a: "middle" })}<rect x="60" y="200" width="16" height="50" rx="8" fill="#eee" stroke="#999"/><rect x="63" y="222" width="10" height="25" rx="5" fill="${C.rojo}"/>${T(150, 222, "Caja ≤ 70 °C", { fs: 12, fw: 600, a: "middle" })}${T(150, 242, "Tira ≤ 75 °C", { fs: 12, fw: 600, a: "middle" })}
+      <rect x="250" y="160" width="210" height="110" rx="10" fill="#fff" stroke="#c8d0d6"/>${T(355, 188, "Rotula y registra", { fs: 13, fw: 600, a: "middle" })}<rect x="300" y="200" width="110" height="40" rx="4" fill="#f4f4f4" stroke="#333"/>${T(355, 226, "MCI-01 · C1", { fs: 14, fw: 700, a: "middle" })}${T(355, 260, "anota todo en el protocolo", { fs: 11.5, a: "middle", c: C.mute })}
+    `, 290, "Pruebas finales: arranque, detector de tierra, temperatura y rótulo")
+  };
+
+  // ---------- Pasos ----------
+  const STEPS = [
+    { id: 1, t: "Mide y marca la polaridad", f: "medir",
+      haz: ["Saca el lente y la ampolleta con el interruptor del circuito encendido.", "Pon la punta roja en un cable y la negra en el otro.", "Si el multímetro marca un número positivo, el cable de la punta roja es el +.", "Marca el + con cinta café y el − con cinta azul.", "Anota la tensión con el motor detenido y, si puedes, en marcha."],
+      ok: "Entre 64 y 67 V con el motor detenido, o entre 73 y 75 V en marcha. Si sale negativo, el + es el de la punta negra.",
+      ojo: "74 V en continua dan un golpe fuerte. Usa puntas con protección y no toques partes metálicas." },
+    { id: 2, t: "Corta y bloquea la energía", f: "bloquear",
+      haz: ["Apaga el interruptor del circuito en el panel de cabina (IE).", "Abre el interruptor de batería.", "Pon tu candado y tu tarjeta en el interruptor de batería.", "Vuelve a medir los dos cables marcados."],
+      ok: "El multímetro marca 0 V.",
+      ojo: "No trabajes nunca con el circuito energizado. Si el motor está andando, detenlo antes." },
+    { id: 3, t: "Retira la ampolleta y el portalámparas", f: "retirar",
+      haz: ["Saca la ampolleta y desarma el portalámparas.", "Deja libres los dos cables marcados.", "Revisa si hay resistencias o un reóstato en el circuito; en instrumentos suele haber uno.", "Si los hay, puentéalos para que el circuito llegue directo."],
+      ok: "Dos cables marcados, café (+) y azul (−), sin nada en serie.",
+      ojo: "No cortes los cables más de lo necesario: los vas a usar para alimentar la caja." },
+    { id: 4, t: "Arma la caja MCI en el banco", f: "armarD",
+      haz: ["Atornilla el riel DIN dentro de la caja.", "Monta X1: borne con fusible de 2 A (X1:1) y borne simple (X1:2).", "Atornilla el convertidor al fondo de la caja con pasta térmica.", "Monta X2: bornes con fusible de 1 A (X2:1 y X2:3) y bornes simples (X2:2 y X2:4).", "Cablea: café de X1:1 a +Vin, azul de X1:2 a −Vin, rojo de +V a X2:1 y X2:3, negro de −V a X2:2 y X2:4. Pon el TVS entre X1:1 y X1:2."],
+      ok: "Cada cable con puntera y su número. Tira suave de cada uno: ninguno se suelta.",
+      ojo: "El convertidor debe quedar apoyado en el metal de la caja; si queda en el aire, se calienta." },
+    { id: 5, t: "Prueba la caja en el banco", f: "bancoD",
+      haz: ["Conecta la fuente: + a X1:1 y − a X1:2.", "Sube la fuente a 74 V.", "Mide entre X2:1 y X2:2.", "Conecta un trozo de tira de prueba en X2.", "Baja la fuente a 45 V y súbela a 95 V mirando la tira."],
+      ok: "24 V ± 0,3 V en todo el rango y la tira no parpadea.",
+      ojo: "Si no tienes fuente, haz esta prueba con la batería de la locomotora en el paso 11." },
+    { id: 6, t: "Monta la caja en la locomotora", f: "montar",
+      haz: ["Elige un lugar a menos de 6 m de sus luminarias.", "Aléjala del escape, de los radiadores y del agua de lavado.", "Marca y perfora 4 agujeros.", "Atornilla con pernos M6 y golilla de presión.", "Deja los prensaestopas hacia abajo para que no entre agua."],
+      ok: "La caja no se mueve al empujarla con la mano.",
+      ojo: "Antes de perforar, revisa el otro lado de la pared: no debe haber cables ni cañerías." },
+    { id: 7, t: "Conecta la entrada de 74 V", f: "entrada",
+      haz: ["Pasa el cable nuevo café y azul por el prensaestopas de entrada.", "Une el cable existente + con el café y el − con el azul, con empalme crimpado y termorretráctil.", "Conecta el café a X1:1 y el azul a X1:2.", "Aprieta el prensaestopas."],
+      ok: "En continuidad: café con el cable +, azul con el cable −. Ningún conductor toca la caja.",
+      ojo: "Si inviertes + y −, el convertidor no enciende pero no se daña. Revisa la polaridad antes de energizar." },
+    { id: 8, t: "Prepara la luminaria LED", f: "luminariaD",
+      haz: ["Corta la tira solo en las marcas de tijera.", "Suelda el rojo al +24 y el negro al −24, o usa un conector IP67.", "Cubre la unión con termorretráctil con adhesivo.", "Pega la tira dentro del perfil y atornilla el perfil a la carcasa.", "Pon el difusor."],
+      ok: "No queda cobre a la vista y el perfil está firme.",
+      ojo: "No dobles la tira en ángulo ni la pegues sobre pintura suelta." },
+    { id: 9, t: "Conecta las salidas de 24 V", f: "salidas",
+      haz: ["Pasa un cable rojo y negro por cada prensaestopas de salida.", "Luminaria 1: rojo a X2:1 y negro a X2:2.", "Luminaria 2: rojo a X2:3 y negro a X2:4.", "Amarra los cables cada 30 cm y cierra la tapa."],
+      ok: "Cada rojo va a un borne con fusible y cada negro a un borne simple.",
+      ojo: "Nunca conectes la tira a X1: con 74 V se quema al instante." },
+    { id: 10, t: "Prueba el aislamiento", f: "aislamiento",
+      haz: ["Une X1:1 con X1:2 con un puente.", "Mide con el megóhmetro a 500 V entre el puente y el chasis.", "Repite en la salida uniendo X2:1 a X2:4.", "Retira los puentes."],
+      ok: "Más de 20 MΩ en las dos mediciones.",
+      ojo: "Nunca apliques el megóhmetro entre + y −: daña los LED y el convertidor." },
+    { id: 11, t: "Energiza y mide", f: "energizarD",
+      haz: ["Retira tu candado y tu tarjeta.", "Cierra el interruptor de batería y luego el del circuito (IE).", "Mide en X1, en X2 y en la luminaria más lejana.", "Mide la corriente de entrada con la pinza."],
+      ok: "X1: 64–67 V detenido o 73–75 V en marcha. X2: 24 V. Luminaria: 23,3 V o más. Corriente según el cuadro de cargas.",
+      ojo: "Si la luz no enciende, apaga y revisa el fusible F1, la polaridad y los fusibles de rama." },
+    { id: 12, t: "Pruebas finales y cierre", f: "final",
+      haz: ["Arranca el motor y mira la luz: puede parpadear y debe volver sola.", "Revisa que el detector de tierra no marque falla.", "Después de 2 h, mide la temperatura de la caja y de la tira.", "Pega el rótulo de la caja (por ejemplo MCI-01 · C1).", "Anota todas las mediciones en el protocolo."],
+      ok: "Caja a 70 °C o menos, tira a 75 °C o menos y sin falla a tierra.",
+      ojo: "Repite los 12 pasos en cada circuito: son 8 cajas por locomotora." }
+  ];
+  const B = {
+    4: { t: "Arma la caja de resistencias en el banco", f: "armarB",
+      haz: ["Atornilla las resistencias al fondo de la caja con pasta térmica.", "Fija un fusible térmico (TCO) sobre cada resistencia.", "Monta X1 (2 bornes) y X2 (4 bornes) y un portafusible de 1 A por luminaria.", "Arma cada rama: fusible → diodo con la banda hacia la resistencia → resistencia → fusible térmico → X2:1 o X2:3.", "Une X2:2 y X2:4 con X1:2 y pon el TVS entre X1:1 y X1:2."],
+      ok: "La banda de cada diodo mira hacia la resistencia y cada resistencia está firme sobre el metal.",
+      ojo: "La resistencia se calienta mucho: nunca la dejes en el aire ni tocando cables." },
+    5: { t: "Prueba una rama en el banco", f: "bancoB",
+      haz: ["Conecta la fuente a X1 y una luminaria de prueba a X2:1 y X2:2.", "Sube la fuente a 74 V.", "Mide la tensión en la resistencia y en cada tramo.", "Baja la fuente a 66 V y mira la luz."],
+      ok: "Unos 26 V en la resistencia y 24 V en cada tramo a 74 V. A 66 V la luz baja un poco (81 %).",
+      ojo: "En la opción B es normal que la luz cambie con la tensión de la red." },
+    8: { t: "Prepara la luminaria con dos tramos en serie", f: "luminariaB",
+      haz: ["Corta dos tramos iguales en las marcas de tijera (0,6 m en numeradores).", "Une el − del tramo 1 con el + del tramo 2 con un cable negro corto.", "Suelda el rojo de salida al + del tramo 1 y el negro de retorno al − del tramo 2.", "Aísla con termorretráctil, pega los tramos en el perfil y pon el difusor."],
+      ok: "Cada unión aislada; los dos tramos encienden juntos en el paso 11.",
+      ojo: "Si conectas los tramos en paralelo se queman: en la opción B van siempre en serie." },
+    9: { t: "Conecta las salidas a las luminarias", f: "salidas",
+      haz: ["Pasa un cable rojo y negro por cada prensaestopas de salida.", "Luminaria 1: rojo a X2:1 (+L) y negro a X2:2 (−L).", "Luminaria 2: rojo a X2:3 (+L) y negro a X2:4 (−L).", "Amarra los cables cada 30 cm y cierra la tapa."],
+      ok: "Cada rojo sale de una rama con fusible, diodo y resistencia.",
+      ojo: "Nunca conectes la tira directo a X1: sin resistencia se quema." },
+    10: { t: "Prueba el aislamiento", f: "aislamiento",
+      haz: ["Une X1:1 con X1:2 con un puente.", "Mide con el megóhmetro a 500 V entre el puente y el chasis.", "Retira el puente."],
+      ok: "Más de 20 MΩ.",
+      ojo: "Nunca apliques el megóhmetro entre + y −: daña los LED." },
+    11: { t: "Energiza y mide", f: "energizarB",
+      haz: ["Retira tu candado y tu tarjeta.", "Cierra el interruptor de batería y luego el del circuito (IE).", "Mide en X1, en la resistencia y en cada tramo.", "Mide la corriente de cada luminaria con la pinza."],
+      ok: "Numerador: entre 0,22 y 0,26 A a 74 V. Si es mayor, revisa el valor de la resistencia.",
+      ojo: "Si una luminaria no enciende, revisa su fusible y que la banda del diodo mire a la resistencia." },
+    12: { t: "Pruebas finales y cierre", f: "final",
+      haz: ["Arranca el motor: la luz baja durante el arranque y vuelve sola.", "Revisa que el detector de tierra no marque falla.", "Después de 2 h, mide la temperatura de la caja y de la tira.", "Pega el rótulo de la caja (por ejemplo CR-01 · C1).", "Anota todas las mediciones en el protocolo."],
+      ok: "Caja a 85 °C o menos, tira a 75 °C o menos y sin falla a tierra.",
+      ojo: "Repite los 12 pasos en cada circuito: son 8 cajas por locomotora." }
+  };
+  const MAT = {
+    D: ["1 caja de aluminio IP65 de 160 × 120 × 60 mm", "1 riel DIN de 150 mm", "1 borne portafusible con fusible de 2 A y 1 borne simple (X1)", "1 diodo TVS 5KP110CA", "1 convertidor RSD-30H-24", "2 bornes portafusibles con fusible de 1 A y 2 bornes simples (X2)", "3 prensaestopas M16", "2 m de cable 2 × 1,5 mm² café/azul y cable 2 × 1,0 mm² rojo/negro", "Tira LED, perfil y difusor según la luminaria", "Punteras, termorretráctil, pasta térmica y 4 pernos M6"],
+    B: ["1 caja de aluminio IP65 de 160 × 120 × 60 mm", "2 bornes de entrada (X1) y 4 de salida (X2)", "1 diodo TVS 5KP110CA", "Por luminaria: portafusible con fusible de 1 A, diodo 1N5408, resistencia y fusible térmico de 130 °C", "3 prensaestopas M16", "2 m de cable 2 × 1,5 mm² café/azul y cable 2 × 1,0 mm² rojo/negro", "Dos tramos de tira LED por luminaria, perfil y difusor", "Punteras, termorretráctil, pasta térmica y 4 pernos M6"]
+  };
+
+  let opt = "D";
+  const KEY = "guia-led-emd-avance";
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* sin almacenamiento */ } };
+  const k = id => `${opt}-${id}`;
+
+  function stepData(s) { return opt === "B" && B[s.id] ? Object.assign({}, s, B[s.id]) : s; }
+
+  function render() {
+    document.getElementById("leadTxt").textContent = opt === "D"
+      ? "Guía para el personal de terreno. Instala una caja MCI por circuito: convierte los 74 V de la locomotora en 24 V fijos para las tiras LED. Sigue los pasos en orden y marca cada uno al terminarlo."
+      : "Guía para el personal de terreno. Instala una caja de resistencias por circuito: cada luminaria lleva su fusible, su diodo y su resistencia. Sigue los pasos en orden y marca cada uno al terminarlo.";
+    document.getElementById("matList").innerHTML = MAT[opt].map(m => `<li>${m}</li>`).join("");
+    document.getElementById("redLbl").textContent = opt === "D" ? "Rojo = +24 V" : "Rojo = +L";
+    document.getElementById("blkLbl").textContent = opt === "D" ? "Negro = −24 V" : "Negro = −L";
+    document.getElementById("overview").innerHTML = (opt === "D" ? FIG.overviewD : FIG.overviewB)();
+    document.getElementById("overNote").textContent = opt === "D"
+      ? "Los dos cables existentes llegan a X1 por el cable café y azul. El convertidor entrega 24 V en X2, y desde ahí sale un cable rojo y negro a cada luminaria."
+      : "Los dos cables existentes llegan a X1. Cada luminaria tiene su rama con fusible, diodo y resistencia, y sale por X2 con un cable rojo y negro.";
+    document.getElementById("steps").innerHTML = STEPS.map(s0 => {
+      const s = stepData(s0), isDone = !!done[k(s.id)];
+      return `<article class="step${isDone ? " is-done" : ""}" id="paso-${s.id}">
+        <div class="plate">${FIG[s.f]()}</div>
+        <div>
+          <div class="step-head"><span class="num">${s.id}</span><h3>${s.t}</h3></div>
+          <ol>${s.haz.map(h => `<li>${h}</li>`).join("")}</ol>
+          <div class="box check"><b>Comprueba</b>${s.ok}</div>
+          <div class="box careful"><b>Cuidado</b>${s.ojo}</div>
+          <label class="done" for="d-${s.id}"><input type="checkbox" id="d-${s.id}" data-id="${s.id}" ${isDone ? "checked" : ""}> Paso terminado</label>
+        </div>
+      </article>`;
+    }).join("");
+    document.querySelectorAll(".done input").forEach(cb => cb.addEventListener("change", e => {
+      done[k(e.target.dataset.id)] = e.target.checked; save();
+      e.target.closest(".step").classList.toggle("is-done", e.target.checked); progress();
+    }));
+    document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.opt === opt)));
+    progress();
+  }
+  function progress() {
+    const n = STEPS.filter(s => done[k(s.id)]).length;
+    document.getElementById("progFill").style.width = `${n / STEPS.length * 100}%`;
+    document.getElementById("progTxt").textContent = `${n} de ${STEPS.length} pasos`;
+    document.getElementById("jump").innerHTML = STEPS.map(s => `<a class="chip${done[k(s.id)] ? " ok" : ""}" href="#paso-${s.id}">Paso ${s.id}</a>`).join("");
+  }
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => { opt = b.dataset.opt; render(); }));
+  render();
+})();
+</script>

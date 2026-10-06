@@ -7,11 +7,14 @@ DC/DC ferroviario 40–160 VCC → 24 VCC, 30 W).
 
 | Documento | PDF | Word | Versión editable (artefacto) |
 | --- | --- | --- | --- |
+| Expediente técnico de validación (D, B y E) | [PDF](Expediente_Tecnico_Validacion_LED_74VCC.pdf) | [DOCX](Expediente_Tecnico_Validacion_LED_74VCC.docx) | [Abrir](https://claude.ai/code/artifact/5e7e6c1c-bcdc-48ff-9433-8c208ac8b121) |
 | Memoria de cálculo | [PDF](Memoria_Calculo_LED_74VCC_EMD.pdf) | [DOCX](Memoria_Calculo_LED_74VCC_EMD.docx) | [Abrir](https://claude.ai/code/artifact/c5c4c168-3fb1-4e36-91c0-0a34098086b1) |
 | Esquemas gráficos (eléctrico, control, componentes) | [PDF](Esquemas_Graficos_LED_74VCC_EMD.pdf) | [DOCX](Esquemas_Graficos_LED_74VCC_EMD.docx) | [Abrir](https://claude.ai/code/artifact/323fb8c2-94f0-450b-b007-d6e3eb98fae1) |
 | Cotización de materiales (2 locomotoras) | [PDF](Cotizacion_Materiales_LED_74VCC_EMD.pdf) | — | [Abrir](https://claude.ai/code/artifact/76a71b1d-c588-45e5-bd51-7aecc4db9034) |
 | Opción B: tira LED directa a 74 V con resistencia | [PDF](Opcion_B_Tira_LED_Resistencia_74VCC.pdf) | [DOCX](Opcion_B_Tira_LED_Resistencia_74VCC.docx) | [Abrir](https://claude.ai/code/artifact/cac5ccec-2cbc-4676-9ce1-b3eb6c0c1ef6) |
 | Opción E: lámpara LED con driver en cada punto | [PDF](Opcion_E_Lampara_LED_Driver_74VCC.pdf) | [DOCX](Opcion_E_Lampara_LED_Driver_74VCC.docx) | [Abrir](https://claude.ai/code/artifact/736c0a3f-e4b4-4441-b940-2eecc96bed4b) |
+
+La guía de instalación paso a paso está en [Guia_Instalacion_LED_EMD.html](Guia_Instalacion_LED_EMD.html) y en línea en [este artefacto](https://claude.ai/artifact/QPys6VZBnVqPXdW6n3TNwm).
 
 El simulador didáctico está en [Simulador_Iluminacion_EMD.html](Simulador_Iluminacion_EMD.html) (descárgalo y ábrelo en el navegador) y en línea en [este artefacto](https://claude.ai/artifact/3ARRRQWAxQqABQfKZRss78).
 
