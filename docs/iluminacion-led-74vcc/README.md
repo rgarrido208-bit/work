@@ -16,6 +16,8 @@ DC/DC ferroviario 40–160 VCC → 24 VCC, 30 W).
 
 La guía de instalación paso a paso está en [Guia_Instalacion_LED_EMD.html](Guia_Instalacion_LED_EMD.html) y en línea en [este artefacto](https://claude.ai/artifact/QPys6VZBnVqPXdW6n3TNwm).
 
+El banco de pruebas con multímetro (puntas y pinza arrastrables, fallas para diagnosticar) está en [Banco_Pruebas_Multimetro_LED_EMD.html](Banco_Pruebas_Multimetro_LED_EMD.html) y en línea en [este artefacto](https://claude.ai/artifact/RrYbqkjqiuG4mKv85cvHnX).
+
 El simulador didáctico está en [Simulador_Iluminacion_EMD.html](Simulador_Iluminacion_EMD.html) (descárgalo y ábrelo en el navegador) y en línea en [este artefacto](https://claude.ai/artifact/3ARRRQWAxQqABQfKZRss78).
 
 Los archivos Word se convirtieron desde el PDF. Para obtener la versión Word nativa, abre

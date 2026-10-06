@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Banco de Pruebas LED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceff3; --surface:#ffffff; --surface-2:#f5f7f9; --ink:#141a20; --ink-2:#4b5662; --line:#d4dae0;
+  --accent:#0d6aad; --accent-ink:#ffffff; --chip:#e3e8ee; --ok:#1c7f49; --warn:#a35f00; --bad:#b53224;
+  --ok-bg:#e5f4ec; --bad-bg:#fbe9e7; --warn-bg:#fff3df;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1317; --surface:#161d23; --surface-2:#1c242b; --ink:#e6ecf1; --ink-2:#9eafbd; --line:#2b3741;
+    --accent:#58a8e8; --accent-ink:#0b1116; --chip:#212c35; --ok:#4cc184; --warn:#e4a443; --bad:#f07264;
+    --ok-bg:#16301f; --bad-bg:#3a1c18; --warn-bg:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1317; --surface:#161d23; --surface-2:#1c242b; --ink:#e6ecf1; --ink-2:#9eafbd; --line:#2b3741;
+  --accent:#58a8e8; --accent-ink:#0b1116; --chip:#212c35; --ok:#4cc184; --warn:#e4a443; --bad:#f07264;
+  --ok-bg:#16301f; --bad-bg:#3a1c18; --warn-bg:#352a14;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 16px 40px}
+header.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.eyebrow{font:600 12px/1.3 "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}
+h1{font:700 clamp(28px,4.4vw,40px)/1.02 "Barlow Condensed",sans-serif;margin:0 0 8px;letter-spacing:.005em}
+.lede{margin:0;color:var(--ink-2);max-width:72ch}
+h2{font:700 19px/1.2 "Barlow Condensed",sans-serif;margin:0 0 10px;letter-spacing:.01em;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--chip);border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;color:var(--ink);font:600 14px/1.2 "IBM Plex Sans",sans-serif;padding:8px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+.seg.small button{font-size:13px;padding:6px 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stage-card{padding:0;overflow:hidden}
+.stage-bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.stage-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;background:#f7f9fb}
+#board{display:block;width:100%;min-width:900px;height:auto;user-select:none;-webkit-user-select:none}
+.fld{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.fld.col{display:flex;flex-direction:column;align-items:stretch;gap:4px;margin-bottom:10px}
+select{font:500 14px "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;max-width:100%}
+.tog{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font:600 13px "IBM Plex Sans",sans-serif;padding:7px 11px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.tog::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--bad)}
+.tog[aria-pressed="true"]::before{background:var(--ok)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:600 14px "IBM Plex Sans",sans-serif;padding:9px 14px;border-radius:9px;cursor:pointer}
+.btn.ghost{background:var(--chip);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.mini{border:1px solid var(--line);background:var(--surface-2);color:var(--accent);font:600 12px "IBM Plex Sans",sans-serif;padding:3px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.hint-scroll{display:none;font-size:12px;color:var(--ink-2);margin-left:auto}
+@media (max-width:920px){.hint-scroll{display:inline}}
+.readout{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 14px;border-top:1px solid var(--line);background:var(--surface)}
+.ro-val{font:600 32px/1 "IBM Plex Mono",monospace;min-width:7.5ch;display:flex;align-items:baseline;gap:6px}
+.ro-val small{font-size:16px;color:var(--ink-2)}
+.ro-txt{flex:1 1 260px;font-size:13.5px;color:var(--ink-2)}
+.ro-txt b{color:var(--ink)}
+.ro-note{margin-top:2px}
+.ro-note.warn{color:var(--warn);font-weight:600}
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-top:14px}
+.wide{grid-column:1/-1}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.lab{font-size:12px;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px}
+.info{font-size:13.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px}
+.info:empty{display:none}
+.info b{display:block;margin-bottom:3px}
+.msg{font-size:13.5px;border-radius:8px;padding:8px 10px;margin:8px 0 0}
+.msg:empty{display:none}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg.bad{background:var(--bad-bg);color:var(--bad)}
+dl.status{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:14px}
+dl.status dt{color:var(--ink-2)}
+dl.status dd{margin:0;font-weight:600}
+.st-ok{color:var(--ok)} .st-bad{color:var(--bad)} .st-warn{color:var(--warn)}
+ol.tasks{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+ol.tasks li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;font-size:13.5px}
+ol.tasks .chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--accent-ink)}
+ol.tasks li.done .chk{background:var(--ok);border-color:var(--ok)}
+ol.tasks li.done .tt{color:var(--ink-2)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+td.num{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+.empty{color:var(--ink-2);font-size:13.5px}
+details.help{margin-top:14px}
+details.help summary{cursor:pointer;font:700 18px "Barlow Condensed",sans-serif}
+details.help ul{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--ink-2)}
+details.help li{margin:4px 0}
+footer{margin-top:14px;font-size:12.5px;color:var(--ink-2)}
+/* SVG */
+#board text{font-family:"IBM Plex Sans",system-ui,sans-serif;fill:#33404c;font-size:11px}
+#board .s{font-size:10px} #board .xs{font-size:8.5px} #board .b{font-weight:600}
+#board .c{text-anchor:middle} #board .e{text-anchor:end} #board .w{fill:#fff} #board .mut{fill:#6b7782} #board .it{font-style:italic}
+#board .h{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600;fill:#1f2a33}
+#board .lcd{font-family:"IBM Plex Mono",monospace;font-size:29px;font-weight:600;fill:#1d2417;text-anchor:end}
+#board .lcdu{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;fill:#1d2417}
+#board .lcds{font-family:"IBM Plex Mono",monospace;font-size:9px;fill:#2c3624}
+#board .dial{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;fill:#cfd5da;text-anchor:middle}
+#board .dial.on{fill:#f0b323}
+#board .note{font-size:8.5px;fill:#ffd27a;text-anchor:middle;font-weight:600}
+.flow{fill:none;stroke:#ffd84d;stroke-width:2.2;stroke-dasharray:2 10;stroke-linecap:round;animation:flow 1s linear infinite;pointer-events:none}
+@keyframes flow{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+.tp .dot{fill:#fff;stroke:#5a6774;stroke-width:1.5}
+.tp .hit{fill:transparent;cursor:pointer}
+.tp:hover .dot,.tp.near .dot{stroke:#0d6aad;stroke-width:2.6}
+.tp.on-red .dot{stroke:#c62828;stroke-width:2.6}
+.tp.on-black .dot{stroke:#111;stroke-width:2.6}
+.faded .tp{opacity:.35}
+.site .ring{fill:rgba(240,179,35,.12);stroke:#d99a0b;stroke-width:1.6;stroke-dasharray:3 3}
+.site .hit{fill:transparent;cursor:pointer}
+.site:hover .ring{stroke-width:2.6}
+.probe,.clampg{cursor:grab;touch-action:none}
+.uihit{fill:transparent;cursor:pointer}
+.blink{animation:blink .6s steps(2) infinite}
+@keyframes blink{50%{opacity:.15}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Locomotoras EMD N.º 49 / 50 · Circuito C01 · Numerador frontal (2 ampolletas)</p>
+      <h1>Banco de pruebas: iluminación LED 74 V</h1>
+      <p class="lede">Circuito completo desde la batería y el generador hasta las tiras LED. Arrastra las puntas del multímetro (roja y negra) a cualquier punto, gira el selector y mide como en terreno. También puedes tocar un punto para mover la punta activa.</p>
+    </div>
+    <div class="seg" id="optSeg" role="group" aria-label="Opción de instalación">
+      <button data-opt="D" aria-pressed="true">Opción D · Convertidor</button>
+      <button data-opt="B" aria-pressed="false">Opción B · Resistencia</button>
+    </div>
+  </header>
+
+  <section class="card stage-card">
+    <div class="stage-bar">
+      <label class="fld">Fuente
+        <select id="src">
+          <option value="stop">Motor detenido · batería 66,2 V</option>
+          <option value="run" selected>Motor en marcha · generador 74 V</option>
+          <option value="crank">Arranque del motor · caída a 45 V</option>
+          <option value="over">Falla del regulador · 90 V</option>
+        </select>
+      </label>
+      <button class="tog" id="tBS" aria-pressed="true">BS cerrado</button>
+      <button class="tog" id="tIE" aria-pressed="true">IE-01 ON</button>
+      <button class="tog" id="tFlow" aria-pressed="true">Flujo de corriente</button>
+      <span class="hint-scroll">↔ desliza el plano</span>
+    </div>
+    <div class="stage-scroll"><svg id="board" viewBox="0 0 1200 780" role="img" aria-label="Circuito de iluminación LED desde la batería hasta las luminarias, con multímetro de puntas arrastrables"></svg></div>
+    <div class="readout">
+      <div class="ro-val" aria-live="polite"><span id="roVal">—</span><small id="roUnit"></small></div>
+      <div class="ro-txt"><div id="roWhere"></div><div id="roNote" class="ro-note"></div></div>
+      <button class="btn" id="btnLog">Anotar lectura</button>
+    </div>
+  </section>
+
+  <section class="panels">
+    <div class="card">
+      <h2>Multímetro</h2>
+      <div class="lab">Selector</div>
+      <div class="seg small" id="modeSeg" role="group" aria-label="Función del multímetro">
+        <button data-mode="off">OFF</button>
+        <button data-mode="V">V cc</button>
+        <button data-mode="R">Ω</button>
+        <button data-mode="dio">▶| diodo</button>
+        <button data-mode="A">A pinza</button>
+      </div>
+      <div id="probeCtl">
+        <div class="lab">Punta activa (al tocar un punto)</div>
+        <div class="seg small" id="activeSeg" role="group" aria-label="Punta activa">
+          <button data-p="red" aria-pressed="true">Roja (V Ω)</button>
+          <button data-p="black" aria-pressed="false">Negra (COM)</button>
+        </div>
+        <div style="margin-top:10px">
+          <label class="fld col">Punta roja en<select id="selRed"></select></label>
+          <label class="fld col">Punta negra en<select id="selBlack"></select></label>
+        </div>
+      </div>
+      <div id="clampCtl" hidden>
+        <div class="lab">Pinza amperimétrica cc</div>
+        <label class="fld col">Pinza alrededor de<select id="selClamp"></select></label>
+        <p class="empty" style="margin:0">Arrastra la pinza amarilla sobre un cable o elige uno aquí. La flecha de la pinza apunta hacia la carga: en los retornos la lectura sale negativa.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Fallas y diagnóstico</h2>
+      <label class="fld col">Falla simulada<select id="fault"></select></label>
+      <div class="row">
+        <button class="btn" id="btnSurprise">Falla sorpresa</button>
+        <button class="btn ghost" id="btnClear">Quitar falla</button>
+        <button class="btn ghost" id="btnTco" hidden>Reemplazar TCO</button>
+      </div>
+      <div id="diag" hidden>
+        <label class="fld col">¿Qué falla encontraste?<select id="diagSel"></select></label>
+        <div class="row">
+          <button class="btn" id="btnCheck">Comprobar</button>
+          <button class="btn ghost" id="btnReveal">Revelar</button>
+        </div>
+      </div>
+      <p class="msg" id="diagMsg"></p>
+      <div class="info" id="faultInfo"></div>
+    </div>
+
+    <div class="card">
+      <h2>Estado observable</h2>
+      <dl class="status" id="status"></dl>
+    </div>
+
+    <div class="card">
+      <h2>Protocolo de medición <span id="prog" class="empty"></span></h2>
+      <ol class="tasks" id="tasks"></ol>
+    </div>
+
+    <div class="card wide">
+      <h2>Registro de mediciones <button class="mini" id="btnClearLog">Borrar registro</button></h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>N.º</th><th>Función</th><th>Puntos</th><th>Lectura</th><th>Condición</th></tr></thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="logEmpty">Aún no hay mediciones anotadas. Coloca las puntas y pulsa «Anotar lectura».</p>
+    </div>
+  </section>
+
+  <details class="card help">
+    <summary>Cómo usar el banco y qué modela</summary>
+    <ul>
+      <li><b>Medir tensión:</b> selector en V cc, punta negra en la referencia (por ejemplo BAT− o X1:2) y punta roja en el punto a medir. Si sale negativo, la roja está en el punto de menor potencial.</li>
+      <li><b>Medir resistencia, continuidad o diodos:</b> primero abre BS (o IE-01). Si hay tensión o corriente en el tramo, el multímetro muestra «Err».</li>
+      <li><b>Medir corriente:</b> selector en A pinza y abraza un solo cable. Pinzar el cable café y el azul juntos daría 0 A.</li>
+      <li><b>Buscar una falla:</b> pulsa «Falla sorpresa», mide desde la fuente hacia la carga y elige tu diagnóstico. La tensión completa aparece en el punto donde el circuito está abierto.</li>
+      <li><b>Modelo:</b> la batería tiene 0,02 Ω internos, los hilos existentes 0,198 Ω por polo, el café y el azul 0,027 Ω. Cada tramo de tira de 24 V sigue I = In·(V − 16)/8 con In = 0,24 A. El convertidor RSD-30H-24 trabaja a potencia constante (η ≈ 85 %, rango de entrada 40–160 V) y entrega 24 V aislados. En la opción B, R1.x = 110 Ω / 50 W con TCO de 130 °C. Es un modelo didáctico: los valores se basan en la memoria de cálculo y el expediente técnico del proyecto.</li>
+    </ul>
+  </details>
+  <footer>Banco didáctico para el proyecto de reemplazo de ampolletas de 74 V por tiras LED. Antes de intervenir una locomotora, sigue el procedimiento de bloqueo y la guía de instalación.</footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('board');
+const $ = id => document.getElementById(id);
+function mk(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function tx(x, y, str, cls, parent, extra){
+  const t = mk('text', Object.assign({x, y, class: cls}, extra || {}), parent);
+  t.textContent = str; return t;
+}
+const C = {board:'#f7f9fb', grid:'#e6ebf0', cafe:'#7b4a24', azul:'#1d5bb5', rojo:'#c9302c', negro:'#1b1b1b', harness:'#4d555c', batP:'#a61e1e', batN:'#1b1b1b'};
+const fc = (v, d) => v.toFixed(d).replace('.', ',');
+
+/* ---------- Datos ---------- */
+const SOURCES = {
+  stop:  {v:66.2, short:'Motor detenido (66,2 V)'},
+  run:   {v:74.0, short:'Motor en marcha (74 V)'},
+  crank: {v:45.0, short:'Arranque (45 V)'},
+  over:  {v:90.0, short:'Sobretensión (90 V)'}
+};
+const H_CAFE = 'En la toma (Toma + / Toma −) hay tensión de fuente, pero entre X1:1 ↑ y X1:2 ↑ hay 0 V. Entre Toma + y X1:1 ↑ se mide la tensión completa: el corte está en ese cable. Con BS abierto, el café en Ω marca OL.';
+const FAULTS = {
+  D: [
+    {id:'none', name:'Sin falla (instalación correcta)'},
+    {id:'f1', name:'F1 fundido (fusible de entrada 2 A T)', hint:'Toma + / Toma − y X1:1 ↑ / X1:2 tienen tensión de fuente, pero X1:1 ↓ / X1:2 marca 0 V. Entre X1:1 ↑ y X1:1 ↓ aparece la tensión completa: un fusible abierto «ve» toda la tensión. Con BS abierto, F1 en Ω marca OL.'},
+    {id:'f21', name:'F2.1 fundido (salida a L01.1)', hint:'La salida del convertidor (+V / −V) entrega 24 V y L01.2 enciende. Respecto de −V, X2:1 ↑ marca 24 V y X2:1 ↓ marca 0 V. Con BS abierto, F2.1 en Ω marca OL.'},
+    {id:'cafe', name:'Cable café cortado (Toma + → X1:1)', hint:H_CAFE},
+    {id:'pol', name:'Polaridad invertida en el cableado existente', hint:'Con la roja en X1:1 y la negra en X1:2 la lectura sale NEGATIVA (≈ −74 V), y ya en la toma se ve invertida. El convertidor no arranca. Corrige la polaridad en el empalme y vuelve a rotular los hilos; antes de energizar otra vez, revisa en la ficha técnica si el convertidor admite polaridad inversa.'},
+    {id:'conv', name:'Convertidor dañado', hint:'+Vin / −Vin recibe la tensión de fuente, pero +V / −V = 0 V y el LED DC OK está apagado. F1 tiene continuidad (con BS abierto). Reemplazar el RSD-30H-24.'},
+    {id:'rojo2', name:'Cable rojo a L01.2 cortado', hint:'X2:3 ↓ marca 24 V respecto de −V, pero en L01.2 + / L01.2 − hay 0 V. Entre X2:3 ↓ y L01.2 + se mide 24 V: el corte está en ese tramo.'},
+    {id:'flojo', name:'Borne X1:2 flojo (alta resistencia)', hint:'Con carga, entre X1:2 ↑ y Toma − caen varios voltios (lo normal es menos de 0,1 V) y el borne se calienta (≈ 2,5 W). En arranque (45 V) el convertidor entra en reinicio cíclico: la tensión cae bajo 40 V al tomar carga. Con BS abierto, el azul en Ω marca ≈ 15 Ω.'},
+    {id:'corto1', name:'Cortocircuito en la tira L01.1 (actúa F2.1)', hint:'F2.1 se funde y aísla la falla: L01.2 sigue encendida (selectividad). Con BS abierto, entre L01.1 + y L01.1 − en Ω hay ≈ 0 Ω: la tira está en corto. Reemplázala antes de cambiar F2.1.'}
+  ],
+  B: [
+    {id:'none', name:'Sin falla (instalación correcta)'},
+    {id:'f11', name:'F1.1 fundido (rama de L01.1)', hint:'El bus interno tiene tensión de fuente y L01.2 enciende. Entre el bus y F1.1 salida se mide la tensión completa y R1.1 queda fría. Con BS abierto, F1.1 en Ω marca OL.'},
+    {id:'diodo', name:'Diodo V1.1 montado al revés', hint:'Entre F1.1 salida y V1.1 cátodo se mide ≈ la tensión de fuente (el diodo bloquea). A la vista, la banda del cátodo apunta hacia el fusible. Con BS abierto, en modo ▶| la lectura directa da OL y la inversa ≈ 0,56 V.'},
+    {id:'tco', name:'TCO1.1 abierto', hint:'Entre R1.1 salida y TCO1.1 salida se mide ≈ la tensión de fuente y R1.1 queda fría. Con BS abierto, TCO1.1 en Ω marca OL. Si el TCO actuó, busca la causa (corto en la tira) antes de reemplazarlo.'},
+    {id:'cafe', name:'Cable café cortado (Toma + → X1:1)', hint:H_CAFE},
+    {id:'pol', name:'Polaridad invertida en el cableado existente', hint:'X1:1 / X1:2 marca un valor negativo. Las tiras no encienden, pero NO se dañan: los diodos V1.x bloquean la tensión inversa (entre F1.1 salida y V1.1 cátodo se mide ≈ −74 V).'},
+    {id:'flojo', name:'Borne X1:2 flojo (alta resistencia)', hint:'Con carga, entre X1:2 ↑ y Toma − caen varios voltios y ambas luminarias quedan más tenues; el borne se calienta. Con BS abierto, el azul en Ω marca ≈ 15 Ω.'},
+    {id:'corto1', name:'Cortocircuito en la tira L01.1', hint:'La corriente sube a ≈ 0,66 A: el fusible de 1 A NO actúa y R1.1 disipa ≈ 48 W. La resistencia se calienta hasta que el TCO de 130 °C abre (≈ 6 s). Por eso el TCO es obligatorio en la opción B. Con BS abierto, entre L01.1 + y L01.1 − en Ω hay ≈ 0 Ω.'}
+  ]
+};
+
+const PTS = [
+  {id:'bp', x:205, y:400, l:'BAT+ · borne de batería', z:'Fuente', o:'DB'},
+  {id:'bn', x:205, y:520, l:'BAT− · borne de batería', z:'Fuente', o:'DB'},
+  {id:'bsi', x:248, y:400, l:'BS · lado batería', z:'Fuente', o:'DB'},
+  {id:'bso', x:300, y:400, l:'BS · lado carga', z:'Fuente', o:'DB'},
+  {id:'iei', x:360, y:400, l:'IE-01 · entrada', z:'Tablero de cabina', o:'DB'},
+  {id:'ieo', x:440, y:400, l:'IE-01 · salida', z:'Tablero de cabina', o:'DB'},
+  {id:'pp', x:580, y:400, l:'Toma + · hilo existente', z:'Punto de toma', o:'DB'},
+  {id:'pn', x:580, y:520, l:'Toma − · hilo existente', z:'Punto de toma', o:'DB'},
+  {id:'x11a', x:680, y:388, l:{D:'X1:1 ↑ · entrada F1 (café)', B:'X1:1 ↑ · llegada café'}, z:'Caja MCI', o:'DB'},
+  {id:'x11b', x:680, y:482, l:{D:'X1:1 ↓ · salida F1', B:'X1:1 ↓ · hacia el bus'}, z:'Caja MCI', o:'DB'},
+  {id:'x12a', x:724, y:388, l:'X1:2 ↑ · llegada azul', z:'Caja MCI', o:'DB'},
+  {id:'x12b', x:724, y:482, l:'X1:2 ↓', z:'Caja MCI', o:'DB'},
+  {id:'vinn', x:800, y:506, l:'Convertidor −Vin', z:'Caja MCI', o:'D'},
+  {id:'vinp', x:840, y:506, l:'Convertidor +Vin', z:'Caja MCI', o:'D'},
+  {id:'von', x:880, y:392, l:'Convertidor −V (salida)', z:'Caja MCI', o:'D'},
+  {id:'vop', x:920, y:392, l:'Convertidor +V (salida 24 V)', z:'Caja MCI', o:'D'},
+  {id:'bus', x:752, y:520, l:'Bus + interno', z:'Caja MCI', o:'B'},
+  {id:'f1o', x:808, y:416, l:'F1.1 salida · ánodo V1.1', z:'Caja MCI', o:'B'},
+  {id:'d1k', x:856, y:416, l:'V1.1 cátodo · entrada R1.1', z:'Caja MCI', o:'B'},
+  {id:'r1o', x:939, y:416, l:'R1.1 salida · entrada TCO1.1', z:'Caja MCI', o:'B'},
+  {id:'t1o', x:971, y:416, l:'TCO1.1 salida', z:'Caja MCI', o:'B'},
+  {id:'f2o', x:808, y:466, l:'F1.2 salida · ánodo V1.2', z:'Caja MCI', o:'B'},
+  {id:'d2k', x:856, y:466, l:'V1.2 cátodo · entrada R1.2', z:'Caja MCI', o:'B'},
+  {id:'r2o', x:939, y:466, l:'R1.2 salida · entrada TCO1.2', z:'Caja MCI', o:'B'},
+  {id:'t2o', x:971, y:466, l:'TCO1.2 salida', z:'Caja MCI', o:'B'},
+  {id:'x21a', x:1000, y:388, l:{D:'X2:1 ↑ · entrada F2.1', B:'X2:1 ↑'}, z:'Caja MCI', o:'DB'},
+  {id:'x21b', x:1000, y:482, l:{D:'X2:1 ↓ · salida F2.1', B:'X2:1 ↓'}, z:'Caja MCI', o:'DB'},
+  {id:'x22a', x:1030, y:388, l:'X2:2 ↑', z:'Caja MCI', o:'DB'},
+  {id:'x22b', x:1030, y:482, l:'X2:2 ↓', z:'Caja MCI', o:'DB'},
+  {id:'x23a', x:1060, y:388, l:{D:'X2:3 ↑ · entrada F2.2', B:'X2:3 ↑'}, z:'Caja MCI', o:'DB'},
+  {id:'x23b', x:1060, y:482, l:{D:'X2:3 ↓ · salida F2.2', B:'X2:3 ↓'}, z:'Caja MCI', o:'DB'},
+  {id:'x24a', x:1090, y:388, l:'X2:4 ↑', z:'Caja MCI', o:'DB'},
+  {id:'x24b', x:1090, y:482, l:'X2:4 ↓', z:'Caja MCI', o:'DB'},
+  {id:'l1p', x:876, y:682, l:'L01.1 + (borne)', z:'Luminarias', o:'DB'},
+  {id:'l1m', x:970, y:719, l:'L01.1 · unión entre tramos', z:'Luminarias', o:'B'},
+  {id:'l1n', x:964, y:682, l:'L01.1 − (borne)', z:'Luminarias', o:'DB'},
+  {id:'l2p', x:1052, y:682, l:'L01.2 + (borne)', z:'Luminarias', o:'DB'},
+  {id:'l2m', x:1146, y:719, l:'L01.2 · unión entre tramos', z:'Luminarias', o:'B'},
+  {id:'l2n', x:1140, y:682, l:'L01.2 − (borne)', z:'Luminarias', o:'DB'}
+];
+const PT = Object.fromEntries(PTS.map(p => [p.id, p]));
+const lbl = id => { const p = PT[id]; return typeof p.l === 'string' ? p.l : p.l[s.opt]; };
+
+const SITES = [
+  {id:'exist', x:520, y:400, l:'Hilo existente (+)', o:'DB', cur:S => S.E.Hp.I},
+  {id:'cafe', x:596, y:400, l:'Cable café (+ entrada)', o:'DB', cur:S => S.E.cafe.I},
+  {id:'azul', x:596, y:520, l:'Cable azul (− retorno)', o:'DB', cur:S => -S.E.azul.I},
+  {id:'rojo', x:960, y:352, l:'Rojo salida 24 V (total)', o:'D', cur:S => S.I1 + S.I2},
+  {id:'bus', x:752, y:540, l:'Bus interno (total)', o:'B', cur:S => S.It},
+  {id:'b1', x:978, y:386, l:'Rama 1 → X2:1', o:'B', cur:S => S.I1},
+  {id:'b2', x:986, y:430, l:'Rama 2 → X2:3', o:'B', cur:S => S.I2},
+  {id:'r1', x:1000, y:590, l:'Rojo L01.1', o:'DB', cur:S => S.I1},
+  {id:'n1', x:1030, y:590, l:'Negro L01.1', o:'DB', cur:S => -S.I1},
+  {id:'r2', x:1060, y:590, l:'Rojo L01.2', o:'DB', cur:S => S.I2},
+  {id:'n2', x:1090, y:590, l:'Negro L01.2', o:'DB', cur:S => -S.I2}
+];
+const SITE = Object.fromEntries(SITES.map(x => [x.id, x]));
+
+const MODES = [
+  {id:'off', sym:'OFF', ang:-100, name:'Apagado'},
+  {id:'V', sym:'Vcc', ang:-45, name:'Tensión V cc'},
+  {id:'R', sym:'Ω', ang:0, name:'Resistencia Ω'},
+  {id:'dio', sym:'▶|', ang:45, name:'Prueba de diodo'},
+  {id:'A', sym:'A', ang:100, name:'Corriente (pinza)'}
+];
+const MODE = Object.fromEntries(MODES.map(m => [m.id, m]));
+
+const PARK = {red:{x:300, y:262}, black:{x:256, y:262}, clamp:{x:318, y:250}};
+
+const s = {
+  opt:'D', src:'run', bs:true, ie:true, fault:'none', hidden:false, flow:true,
+  mode:'V', active:'red',
+  probe:{red:{x:PARK.red.x, y:PARK.red.y, node:null}, black:{x:PARK.black.x, y:PARK.black.y, node:null}},
+  clamp:{x:PARK.clamp.x, y:PARK.clamp.y, site:null},
+  temp:{1:45, 2:45}, tcoTrip:{1:false, 2:false}, hicPhase:false,
+  done:{D:new Set(), B:new Set()}, log:[]
+};
+
+/* ---------- Modelo eléctrico ---------- */
+function drop(e, I){
+  switch (e.t){
+    case 'diode': return 0.8;
+    case 'led': return e.short ? I * 0.03 : 16 + I * 33.333;
+    case 'load': return e.vdrop;
+    default: return I * e.r;
+  }
+}
+function revBiased(e, from, vS, vE){
+  const fwd = (e.a === from) !== e.rev;
+  if (vS > vE) return !fwd;
+  if (vS < vE) return fwd;
+  return false;
+}
+// Recorre una cadena serie y asigna potenciales. Sin corriente, los nodos antes del primer bloqueo quedan a vS y los posteriores a vE.
+function walk(start, list, vS, vE, I, pot){
+  const nodes = [start]; let cur = start;
+  for (const e of list){ cur = e.a === cur ? e.b : e.a; nodes.push(cur); }
+  if (I > 1e-6){
+    let v = vS; pot[nodes[0]] = v;
+    list.forEach((e, i) => { v -= drop(e, I); pot[nodes[i + 1]] = v; e.I += (e.a === nodes[i] ? I : -I); });
+  } else {
+    let b = list.findIndex(e => e.open);
+    if (b < 0) b = list.findIndex((e, i) => e.t === 'diode' && revBiased(e, nodes[i], vS, vE));
+    if (b < 0) b = list.findIndex(e => (e.t === 'load' || e.t === 'led') && !e.short);
+    if (b < 0) b = list.length;
+    nodes.forEach((n, i) => { pot[n] = i <= b ? vS : vE; });
+  }
+  return nodes;
+}
+const sumR = list => list.reduce((a, e) => a + (e.t === 'load' || e.t === 'led' || e.t === 'diode' ? 0 : e.r), 0);
+
+function solve(){
+  const f = s.fault, Vs = SOURCES[s.src].v, pol = f === 'pol';
+  const E = {}, pot = {}, dom = {};
+  const add = (id, a, b, t, r, x) => (E[id] = Object.assign({id, a, b, t, r:r || 0, open:false, I:0, rev:false, short:false, vdrop:0}, x || {}));
+  add('rint', 'emf', 'bp', 'w', 0.02);
+  add('wbs', 'bp', 'bsi', 'w', 0.002);
+  add('BS', 'bsi', 'bso', 'sw', 0.001, {open:!s.bs});
+  add('wie', 'bso', 'iei', 'w', 0.004);
+  add('IE', 'iei', 'ieo', 'sw', 0.01, {open:!s.ie});
+  add('Hp', 'ieo', pol ? 'pn' : 'pp', 'w', 0.198);
+  add('Hn', pol ? 'pp' : 'pn', 'bn', 'w', 0.198);
+  add('cafe', 'pp', 'x11a', 'w', 0.027, {open:f === 'cafe'});
+  add('azul', 'x12a', 'pn', 'w', 0.027 + (f === 'flojo' ? 15 : 0));
+  add('X12', 'x12b', 'x12a', 'w', 0.002);
+  const S = {E, pot, dom, Vs, I1:0, I2:0, It:0, conv:null, outOn:false, bright:{1:0, 2:0}, PR:{1:0, 2:0}, Tss:{1:45, 2:45}};
+
+  if (s.opt === 'D'){
+    add('F1', 'x11a', 'x11b', 'fuse', 0.1, {open:f === 'f1'});
+    add('ip', 'x11b', 'vinp', 'w', 0.003);
+    add('LOAD', 'vinp', 'vinn', 'load', 0);
+    add('in', 'vinn', 'x12b', 'w', 0.003);
+    add('TVS', 'x11b', 'x12b', 'tvs', 0);
+    add('ro1', 'vop', 'x21a', 'w', 0.015);
+    add('F21', 'x21a', 'x21b', 'fuse', 0.12, {open:f === 'f21' || f === 'corto1'});
+    add('d1p', 'x21b', 'l1p', 'w', 0.05);
+    add('LUM1', 'l1p', 'l1n', 'load', 0, {short:f === 'corto1'});
+    add('d1n', 'l1n', 'x22b', 'w', 0.05);
+    add('XT2', 'x22b', 'x22a', 'w', 0.002);
+    add('no1', 'x22a', 'von', 'w', 0.015);
+    add('ro2', 'vop', 'x23a', 'w', 0.02);
+    add('F23', 'x23a', 'x23b', 'fuse', 0.12);
+    add('d2p', 'x23b', 'l2p', 'w', 0.05, {open:f === 'rojo2'});
+    add('LUM2', 'l2p', 'l2n', 'load', 0);
+    add('d2n', 'l2n', 'x24b', 'w', 0.05);
+    add('XT4', 'x24b', 'x24a', 'w', 0.002);
+    add('no2', 'x24a', 'von', 'w', 0.02);
+    const ch1 = ['ro1', 'F21', 'd1p', 'LUM1', 'd1n', 'XT2', 'no1'].map(k => E[k]);
+    const ch2 = ['ro2', 'F23', 'd2p', 'LUM2', 'd2n', 'XT4', 'no2'].map(k => E[k]);
+    const c1 = !ch1.some(e => e.open), c2 = !ch2.some(e => e.open);
+    const Pout = 24 * 0.48 * ((c1 ? 1 : 0) + (c2 ? 1 : 0));
+    const Pin = Pout / 0.85 + 0.5;
+    const chain = (pol
+      ? ['rint', 'wbs', 'BS', 'wie', 'IE', 'Hp', 'azul', 'X12', 'in', 'LOAD', 'ip', 'F1', 'cafe', 'Hn']
+      : ['rint', 'wbs', 'BS', 'wie', 'IE', 'Hp', 'cafe', 'F1', 'ip', 'LOAD', 'in', 'X12', 'azul', 'Hn']).map(k => E[k]);
+    const Rl = sumR(chain);
+    let I = 0, conv;
+    if (chain.some(e => e.open)) conv = 'nopower';
+    else if (pol) conv = 'rev';
+    else if (f === 'conv') conv = 'dam';
+    else {
+      const disc = Vs * Vs - 4 * Rl * Pin;
+      const Il = disc >= 0 ? (Vs - Math.sqrt(disc)) / (2 * Rl) : Vs / (2 * Rl);
+      const Vin = Vs - Il * Rl;
+      if (disc >= 0 && Vin >= 40){ conv = 'on'; I = Il; }
+      else { conv = 'hic'; if (s.hicPhase) I = Il; }
+    }
+    E.LOAD.vdrop = Vs - I * Rl;
+    walk('emf', chain, Vs, 0, I, pot);
+    const outOn = conv === 'on' || (conv === 'hic' && s.hicPhase);
+    const Vo = outOn ? 24 : 0;
+    const I1 = outOn && c1 ? 0.48 : 0, I2 = outOn && c2 ? 0.48 : 0;
+    E.LUM1.vdrop = Vo - I1 * sumR(ch1);
+    E.LUM2.vdrop = Vo - I2 * sumR(ch2);
+    walk('vop', ch1, Vo, 0, I1, pot);
+    walk('vop', ch2, Vo, 0, I2, pot);
+    pot.vop = Vo; pot.von = 0;
+    ['vop', 'von', 'x21a', 'x21b', 'x22a', 'x22b', 'x23a', 'x23b', 'x24a', 'x24b', 'l1p', 'l1n', 'l2p', 'l2n'].forEach(n => dom[n] = 'S');
+    Object.assign(S, {conv, outOn, I1, I2, It:I1 + I2, Iin:I, Pin:I * E.LOAD.vdrop});
+    S.bright = {1:I1 > 0 ? 1 : 0, 2:I2 > 0 ? 1 : 0};
+  } else {
+    add('X11', 'x11a', 'x11b', 'w', 0.002);
+    add('wbus', 'x11b', 'bus', 'w', 0.005);
+    const br = {};
+    [1, 2].forEach(k => {
+      const xa = k === 1 ? 'x21a' : 'x23a', xb = k === 1 ? 'x21b' : 'x23b';
+      const rb = k === 1 ? 'x22b' : 'x24b', ra = k === 1 ? 'x22a' : 'x24a';
+      const sh = k === 1 && f === 'corto1';
+      br[k] = [
+        add('F' + k, 'bus', 'f' + k + 'o', 'fuse', 0.15, {open:k === 1 && f === 'f11'}),
+        add('V' + k, 'f' + k + 'o', 'd' + k + 'k', 'diode', 0, {rev:k === 1 && f === 'diodo'}),
+        add('R' + k, 'd' + k + 'k', 'r' + k + 'o', 'res', 110),
+        add('T' + k, 'r' + k + 'o', 't' + k + 'o', 'tco', 0.005, {open:(k === 1 && f === 'tco') || s.tcoTrip[k]}),
+        add('wx' + k, 't' + k + 'o', xa, 'w', 0.03),
+        add('XA' + k, xa, xb, 'w', 0.002),
+        add('dp' + k, xb, 'l' + k + 'p', 'w', 0.04),
+        add('LA' + k, 'l' + k + 'p', 'l' + k + 'm', 'led', 0, {short:sh}),
+        add('LB' + k, 'l' + k + 'm', 'l' + k + 'n', 'led', 0, {short:sh}),
+        add('dn' + k, 'l' + k + 'n', rb, 'w', 0.04),
+        add('XB' + k, rb, ra, 'w', 0.002),
+        add('wr' + k, ra, 'x12a', 'w', 0.03)
+      ];
+    });
+    const pos = (pol ? ['rint', 'wbs', 'BS', 'wie', 'IE', 'Hp', 'azul'] : ['rint', 'wbs', 'BS', 'wie', 'IE', 'Hp', 'cafe', 'X11', 'wbus']).map(k => E[k]);
+    const neg = (pol ? ['Hn', 'cafe', 'X11', 'wbus'] : ['azul', 'Hn']).map(k => E[k]);
+    const Rpos = sumR(pos), Rneg = sumR(neg);
+    const I = {1:0, 2:0}; let It = 0;
+    const brI = (k, V) => {
+      const L = br[k];
+      if (L.some(e => e.open) || E['V' + k].rev) return 0;
+      const rw = L.reduce((a, e) => a + (['w', 'fuse', 'tco'].includes(e.t) ? e.r : 0), 0);
+      const R = E['R' + k].r;
+      return Math.max(0, E['LA' + k].short ? (V - 0.8) / (R + rw + 0.06) : (V - 0.8 - 32) / (66.667 + R + rw));
+    };
+    if (!pol && !pos.some(e => e.open) && !neg.some(e => e.open)){
+      for (let n = 0; n < 60; n++){
+        const V = Vs - It * (Rpos + Rneg);
+        It = 0.5 * It + 0.5 * (brI(1, V) + brI(2, V));
+      }
+      const V = Vs - It * (Rpos + Rneg);
+      I[1] = brI(1, V); I[2] = brI(2, V); It = I[1] + I[2];
+    }
+    if (!pol){ walk('emf', pos, Vs, 0, It, pot); walk('x12a', neg, It * Rneg, 0, It, pot); }
+    else { walk('emf', pos, Vs, 0, 0, pot); walk('bn', neg, 0, 0, 0, pot); }
+    const vRet = pot.x12a;
+    [1, 2].forEach(k => walk('bus', br[k], pot.bus, vRet, I[k], pot));
+    pot.x12a = vRet; pot.x12b = vRet;
+    Object.assign(S, {I1:I[1], I2:I[2], It, Iin:It});
+    [1, 2].forEach(k => {
+      S.bright[k] = E['LA' + k].short ? 0 : I[k] / 0.24;
+      S.PR[k] = I[k] * I[k] * 110;
+      S.Tss[k] = 45 + S.PR[k] * 2.6;
+    });
+  }
+  Object.keys(pot).forEach(n => { if (!dom[n]) dom[n] = 'P'; });
+  return S;
+}
+
+function shortest(S, a, b, mode){
+  const adj = {};
+  const ad = (u, v, c, e) => { (adj[u] = adj[u] || []).push([v, c, e]); };
+  for (const e of Object.values(S.E)){
+    if (e.id === 'rint') continue;
+    if (['w', 'sw', 'fuse', 'res', 'tco'].includes(e.t)){
+      if (e.open) continue;
+      const c = mode === 'R' ? e.r : e.r * 0.001;
+      ad(e.a, e.b, c, e); ad(e.b, e.a, c, e);
+    } else if ((e.t === 'led' || e.t === 'load') && e.short){
+      const c = mode === 'R' ? 0.03 : 0.00003;
+      ad(e.a, e.b, c, e); ad(e.b, e.a, c, e);
+    } else if (e.t === 'diode' && mode === 'dio'){
+      const an = e.rev ? e.b : e.a, ca = e.rev ? e.a : e.b;
+      ad(an, ca, 0.56, e);
+    }
+  }
+  const dist = {[a]:0}, prev = {}, done = new Set(), Q = [a];
+  while (Q.length){
+    Q.sort((x, y) => dist[x] - dist[y]);
+    const u = Q.shift();
+    if (done.has(u)) continue;
+    done.add(u);
+    if (u === b) break;
+    for (const [v, c, e] of (adj[u] || [])){
+      const nd = dist[u] + c;
+      if (dist[v] === undefined || nd < dist[v]){ dist[v] = nd; prev[v] = [u, e]; Q.push(v); }
+    }
+  }
+  if (dist[b] === undefined) return null;
+  const els = []; let n = b;
+  while (n !== a){ const [u, e] = prev[n]; els.push(e); n = u; }
+  return {cost:dist[b], els};
+}
+
+const fmtV = v => { const a = Math.abs(v); return a < 10 ? v.toFixed(3) : a < 100 ? v.toFixed(2) : v.toFixed(1); };
+const fmtR = R => R < 1000 ? {txt:R.toFixed(R < 100 ? 2 : 1), unit:'Ω'} : {txt:(R / 1000).toFixed(3), unit:'kΩ'};
+
+function reading(S){
+  const m = s.mode;
+  const M = {mode:m, red:s.probe.red.node, black:s.probe.black.node, site:s.clamp.site, val:null, txt:'', unit:'', note:'', warn:false, valid:false, beep:false};
+  if (m === 'off'){ M.note = 'Multímetro apagado: gira el selector.'; return M; }
+  if (m === 'A'){
+    M.unit = 'A';
+    if (!M.site){ M.txt = '0.000'; M.note = 'Abraza un solo cable con la pinza.'; return M; }
+    const I = SITE[M.site].cur(S) || 0;
+    M.val = I; M.valid = true; M.txt = I.toFixed(3);
+    if (Math.abs(I) < 0.001) M.note = 'No circula corriente por este cable.';
+    else if (I < 0) M.note = 'Signo negativo: la corriente va en sentido contrario a la flecha de la pinza (es un retorno).';
+    return M;
+  }
+  const r = M.red, b = M.black;
+  if (!r || !b){
+    M.unit = m === 'R' ? 'Ω' : 'V';
+    M.txt = m === 'V' ? '0.00' : 'OL';
+    M.note = 'Coloca ambas puntas sobre puntos de medición.';
+    return M;
+  }
+  const iso = S.dom[r] !== S.dom[b];
+  const dv = iso ? 0 : (S.pot[r] || 0) - (S.pot[b] || 0);
+  if (m === 'V'){
+    M.unit = 'V'; M.valid = true;
+    if (iso){ M.val = 0; M.txt = '0.00'; M.note = 'Puntos en circuitos aislados (entrada 74 V / salida 24 V): no tienen referencia común.'; return M; }
+    M.val = dv; M.txt = fmtV(dv);
+    if (dv < -0.5) M.note = 'Lectura negativa: la punta roja está en el punto de menor potencial.';
+    return M;
+  }
+  M.unit = m === 'R' ? 'Ω' : 'V';
+  if (iso){ M.txt = 'OL'; M.valid = true; M.note = 'El convertidor aísla la entrada de la salida: no hay continuidad.'; return M; }
+  if (Math.abs(dv) > 0.05){ M.txt = 'Err'; M.warn = true; M.note = '⚠ Hay tensión entre las puntas. Abre BS (o IE-01) antes de medir ' + (m === 'R' ? 'resistencia.' : 'diodos.'); return M; }
+  const P = r === b ? {cost:0, els:[]} : shortest(S, r, b, m);
+  if (P && P.els.some(e => Math.abs(e.I) > 0.001)){ M.txt = 'Err'; M.warn = true; M.note = '⚠ Circula corriente por este tramo: abre BS antes de medir.'; return M; }
+  M.valid = true;
+  if (!P){ M.txt = 'OL'; M.note = m === 'R' ? 'Circuito abierto: no hay continuidad.' : 'No conduce en este sentido.'; return M; }
+  if (m === 'R'){
+    const R = P.cost + 0.2; const f = fmtR(R);
+    M.val = R; M.txt = f.txt; M.unit = f.unit; M.beep = R < 30;
+    if (M.beep) M.note = 'Continuidad (incluye ≈ 0,2 Ω de los cables del multímetro).';
+    return M;
+  }
+  const v = P.cost + 0.0002;
+  if (v > 2){ M.txt = 'OL'; return M; }
+  M.val = v; M.txt = v.toFixed(3); M.beep = v < 0.05;
+  if (P.els.some(e => e.t === 'diode')) M.note = 'Diodo en sentido directo (≈ 0,56 V).';
+  return M;
+}
+
+/* ---------- Dibujo ---------- */
+const defs = mk('defs', {}, svg);
+const pat = mk('pattern', {id:'grid', width:20, height:20, patternUnits:'userSpaceOnUse'}, defs);
+mk('path', {d:'M20 0H0V20', fill:'none', stroke:C.grid, 'stroke-width':1}, pat);
+const flt = mk('filter', {id:'glow', x:'-50%', y:'-150%', width:'200%', height:'400%'}, defs);
+mk('feGaussianBlur', {stdDeviation:5}, flt);
+const flt2 = mk('filter', {id:'soft', x:'-100%', y:'-100%', width:'300%', height:'300%'}, defs);
+mk('feGaussianBlur', {stdDeviation:2.5}, flt2);
+
+const L = {};
+['grid', 'wires', 'flow', 'comp', 'marks', 'ui', 'pts', 'sites', 'leads', 'tools', 'tip'].forEach(k => { L[k] = mk('g', {id:'L-' + k}, svg); });
+['grid', 'wires', 'flow', 'comp', 'marks', 'leads', 'tip'].forEach(k => L[k].setAttribute('pointer-events', 'none'));
+mk('rect', {x:0, y:0, width:1200, height:780, fill:C.board}, L.grid);
+mk('rect', {x:0, y:0, width:1200, height:780, fill:'url(#grid)'}, L.grid);
+
+const W = {};
+function wire(id, o, col, w, d, cur){
+  const g = mk('g', o === 'DB' ? {} : {'data-o':o}, L.wires);
+  mk('path', {d, fill:'none', stroke:C.board, 'stroke-width':w + 5, 'stroke-linejoin':'round'}, g);
+  mk('path', {d, fill:'none', stroke:C[col], 'stroke-width':w, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, g);
+  const fl = mk('path', {d, class:'flow'}, L.flow);
+  W[id] = {fl, cur, o};
+}
+// Generador (va primero para que el cableado existente cruce por encima)
+wire('wGp', 'DB', 'batP', 3, 'M180 608 H222 V400', () => 0);
+wire('wGn', 'DB', 'batN', 3, 'M180 630 H205 V528', () => 0);
+// Fuente y tablero
+wire('wBat', 'DB', 'batP', 5, 'M205 400 H248', S => S.E.wbs.I);
+wire('wBS', 'DB', 'batP', 4, 'M300 400 H376', S => S.E.wie.I);
+wire('wHp', 'DB', 'harness', 4, 'M424 400 H580', S => Math.abs(S.E.Hp.I));
+wire('wHn', 'DB', 'harness', 4, 'M580 520 H205', S => Math.abs(S.E.Hn.I));
+// Cables nuevos de llegada
+wire('wAzul', 'DB', 'azul', 3.2, 'M724 388 V340 H648 V520 H580', S => S.E.azul.I);
+wire('wCafe', 'DB', 'cafe', 3.2, 'M580 400 H632 V356 H680 V388', S => S.E.cafe.I);
+// Opción D
+wire('dIp', 'D', 'cafe', 2.6, 'M680 482 V560 H840 V506', S => S.E.ip ? S.E.ip.I : 0);
+wire('dIn', 'D', 'azul', 2.6, 'M800 506 V548 H724 V482', S => S.E.in ? S.E.in.I : 0);
+wire('dNo', 'D', 'negro', 2.6, 'M1090 388 V340 H880 V392', S => S.I1 + S.I2);
+wire('dNo1', 'D', 'negro', 2.6, 'M1030 388 V340', S => S.I1);
+wire('dRo', 'D', 'rojo', 2.6, 'M920 392 V352 H1060 V388', S => S.I1 + S.I2);
+wire('dRo1', 'D', 'rojo', 2.6, 'M1000 352 V388', S => S.I1);
+// Opción B
+wire('bBus', 'B', 'cafe', 2.6, 'M680 482 V560 H752 V416', S => S.It);
+[[1, 416], [2, 466]].forEach(([k, y]) => {
+  const c = S => k === 1 ? S.I1 : S.I2;
+  wire('bA' + k, 'B', 'cafe', 2.4, `M752 ${y} H764`, c);
+  wire('bB' + k, 'B', 'cafe', 2.4, `M800 ${y} H818`, c);
+  wire('bC' + k, 'B', 'cafe', 2.4, `M844 ${y} H866`, c);
+  wire('bD' + k, 'B', 'cafe', 2.4, `M930 ${y} H948`, c);
+});
+wire('bRet', 'B', 'negro', 2.6, 'M1090 388 V330 H724 V340', S => S.It);
+wire('bRet1', 'B', 'negro', 2.6, 'M1030 388 V330', S => S.I1);
+wire('bE1', 'B', 'rojo', 2.6, 'M964 416 H978 V360 H1000 V388', S => S.I1);
+wire('bE2', 'B', 'rojo', 2.6, 'M964 466 H986 V368 H1060 V388', S => S.I2);
+// Bajadas a luminarias
+wire('r1', 'DB', 'rojo', 2.6, 'M1000 482 V646 H876 V682', S => S.I1);
+wire('n1', 'DB', 'negro', 2.6, 'M964 682 V656 H1030 V482', S => S.I1);
+wire('r2', 'DB', 'rojo', 2.6, 'M1060 482 V646 H1052 V682', S => S.I2);
+wire('n2', 'DB', 'negro', 2.6, 'M1140 682 V656 H1090 V482', S => S.I2);
+// Uniones
+[[222, 400, 'DB', 'batP'], [1000, 352, 'D', 'rojo'], [1030, 340, 'D', 'negro'], [752, 466, 'B', 'cafe'], [1030, 330, 'B', 'negro'], [724, 340, 'B', 'azul']].forEach(([x, y, o, col]) => {
+  mk('circle', {cx:x, cy:y, r:3.6, fill:C[col], 'data-o':o === 'DB' ? null : o}, L.wires);
+});
+
+const G = {};
+function screw(x, y, p){
+  mk('circle', {cx:x, cy:y, r:5, fill:'#c5ccd3', stroke:'#59636d', 'stroke-width':1.2}, p);
+  mk('line', {x1:x - 3, y1:y - 3, x2:x + 3, y2:y + 3, stroke:'#59636d', 'stroke-width':1.2}, p);
+}
+function post(x, y, ring, p){
+  mk('circle', {cx:x, cy:y, r:8, fill:'#d6dbe0', stroke:ring, 'stroke-width':3}, p);
+  mk('circle', {cx:x, cy:y, r:3, fill:'#7b858f'}, p);
+}
+// Batería
+(() => {
+  const g = mk('g', {}, L.comp);
+  tx(24, 344, 'Batería 64 V · 32 celdas (8 × 8 V)', 's b', g);
+  mk('rect', {x:24, y:352, width:172, height:190, rx:10, fill:'#e6eaee', stroke:'#8a97a3', 'stroke-width':1.5}, g);
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++){
+    const x = 36 + c * 38, y = 374 + r * 86;
+    mk('rect', {x:x + 4, y:y - 6, width:6, height:6, fill:'#b23b2e'}, g);
+    mk('rect', {x:x + 20, y:y - 6, width:6, height:6, fill:'#30373e'}, g);
+    mk('rect', {x, y, width:30, height:64, rx:4, fill:'#3b434b', stroke:'#20262b'}, g);
+    tx(x + 15, y + 37, '8 V', 'xs b c w', g);
+  }
+  mk('path', {d:'M60 368 H78 M98 368 H116 M136 368 H154 M60 454 H78 M98 454 H116 M136 454 H154 M43 368 V454', fill:'none', stroke:'#8d969e', 'stroke-width':2}, g);
+  mk('path', {d:'M177 368 V360 H190 V400 H198 M177 454 V446 H188 V520 H198', fill:'none', stroke:'#8d969e', 'stroke-width':2}, g);
+  post(205, 400, '#c62828', g); post(205, 520, '#222', g);
+  tx(205, 384, 'BAT+', 'xs b c', g); tx(205, 506, 'BAT−', 'xs b c', g);
+})();
+// Generador
+(() => {
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:24, y:572, width:172, height:104, rx:10, fill:'#eeeaf5', stroke:'#8a97a3', 'stroke-width':1.5}, g);
+  G.genC = mk('circle', {cx:60, cy:614, r:22, fill:'#fff', stroke:'#4a3f6b', 'stroke-width':2}, g);
+  tx(60, 619, 'G', 'b c', g, {style:'font-size:15px'});
+  mk('rect', {x:98, y:596, width:82, height:44, rx:5, fill:'#fff', stroke:'#4a3f6b'}, g);
+  tx(139, 615, 'Regulador', 'xs b c', g); tx(139, 628, '74 V', 'xs c', g);
+  mk('line', {x1:82, y1:614, x2:98, y2:614, stroke:'#4a3f6b', 'stroke-width':2}, g);
+  tx(110, 590, 'Generador auxiliar', 'xs b c', g);
+  G.genT = tx(110, 662, '', 'xs c', g);
+})();
+// BS
+(() => {
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:238, y:386, width:72, height:28, rx:5, fill:'#e3e8ed', stroke:'#8a97a3'}, g);
+  mk('rect', {x:295, y:392, width:10, height:4, fill:'#59636d'}, g);
+  mk('rect', {x:295, y:404, width:10, height:4, fill:'#59636d'}, g);
+  G.bs = mk('g', {}, g);
+  mk('line', {x1:248, y1:400, x2:302, y2:400, stroke:'#59636d', 'stroke-width':4, 'stroke-linecap':'round'}, G.bs);
+  mk('circle', {cx:302, cy:400, r:5, fill:'#c62828'}, G.bs);
+  mk('circle', {cx:248, cy:400, r:4, fill:'#2f363d'}, g);
+  tx(274, 430, 'BS', 's b c', g);
+  tx(274, 442, 'interruptor de batería', 'xs c mut', g);
+})();
+// Tablero e IE-01
+(() => {
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:330, y:350, width:140, height:114, rx:8, fill:'#e3e8ed', stroke:'#8a97a3', 'stroke-width':1.5}, g);
+  tx(340, 366, 'Tablero de cabina', 'xs b', g);
+  mk('rect', {x:376, y:376, width:48, height:56, rx:4, fill:'#fbfcfd', stroke:'#58636e'}, g);
+  mk('rect', {x:390, y:382, width:20, height:42, rx:3, fill:'#dde3e8'}, g);
+  G.ieLev = mk('rect', {x:392, y:384, width:16, height:18, rx:2, fill:'#2a7d4f'}, g);
+  G.ieTxt = tx(400, 446, '', 'xs b c', g);
+  tx(400, 458, 'IE-01 (existente)', 'xs c', g);
+})();
+// Cableado existente y punto de toma
+(() => {
+  const g = mk('g', {}, L.comp);
+  tx(510, 380, 'Cableado existente', 'xs b c', g);
+  tx(510, 548, 'de la locomotora (2 hilos)', 'xs c mut', g);
+  [400, 520].forEach(y => {
+    mk('path', {d:`M496 ${y + 9} L503 ${y - 9} M503 ${y + 9} L510 ${y - 9}`, stroke:C.board, 'stroke-width':5}, g);
+    mk('path', {d:`M496 ${y + 9} L503 ${y - 9} M503 ${y + 9} L510 ${y - 9}`, stroke:'#4d555c', 'stroke-width':1.5}, g);
+  });
+  tx(503, 432, '≈ 20 m', 'xs c mut', g);
+  tx(562, 392, '+74', 'xs b c', g); tx(562, 536, '−', 'xs b c', g);
+  mk('path', {d:'M580 408 V447 M580 473 V512', stroke:'#8a97a3', 'stroke-width':1.5, 'stroke-dasharray':'4 3'}, g);
+  mk('circle', {cx:580, cy:460, r:13, fill:'none', stroke:'#8a97a3', 'stroke-width':1.5, 'stroke-dasharray':'4 3'}, g);
+  mk('path', {d:'M571 451 L589 469 M589 451 L571 469', stroke:'#8a97a3', 'stroke-width':1.5}, g);
+  tx(562, 457, 'ampolleta 74 V', 'xs e it mut', g);
+  tx(562, 468, 'retirada', 'xs e it mut', g);
+})();
+// Caja MCI
+(() => {
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:612, y:298, width:516, height:334, rx:12, fill:'rgba(232,237,242,.55)', stroke:'#8a97a3', 'stroke-width':2}, g);
+  G.boxT = tx(626, 320, '', 'h', g);
+  [[606, 394], [606, 514]].forEach(([x, y]) => mk('rect', {x, y, width:12, height:12, rx:2, fill:'#9aa5b0'}, g));
+  [1000, 1030, 1060, 1090].forEach(x => mk('rect', {x:x - 6, y:626, width:12, height:12, rx:2, fill:'#9aa5b0'}, g));
+  mk('rect', {x:656, y:428, width:92, height:10, fill:'#c9d0d6'}, g);
+  mk('rect', {x:976, y:428, width:138, height:10, fill:'#c9d0d6'}, g);
+  tx(702, 508, 'X1', 'xs b c', g);
+  tx(1045, 508, 'X2', 'xs b c', g);
+})();
+function terminal(cx, num, fuse, o){
+  const g = mk('g', o ? {'data-o':o} : {}, L.comp);
+  mk('rect', {x:cx - 12, y:378, width:24, height:112, rx:3, fill:'#dfe5ea', stroke:'#7d8a96'}, g);
+  screw(cx, 388, g); screw(cx, 482, g);
+  if (fuse){
+    mk('rect', {x:cx - 7, y:410, width:14, height:42, rx:2, fill:'#fff', stroke:'#7d8a96'}, g);
+    mk('rect', {x:cx - 4, y:415, width:8, height:32, rx:2, fill:'#e6f0f8', stroke:'#9fb3c4'}, g);
+    mk('line', {x1:cx, y1:416, x2:cx, y2:446, stroke:'#8a6d2a', 'stroke-width':1.2}, g);
+    tx(cx, 405, fuse, 'xs b c', g, {style:'font-size:7.5px'});
+  }
+  tx(cx, 470, num, 'xs c', g);
+}
+terminal(680, '1', 'F1', 'D'); terminal(680, '1', null, 'B'); terminal(724, '2', null, null);
+terminal(1000, '1', 'F2.1', 'D'); terminal(1000, '1', null, 'B');
+terminal(1030, '2', null, null);
+terminal(1060, '3', 'F2.2', 'D'); terminal(1060, '3', null, 'B');
+terminal(1090, '4', null, null);
+// TVS y convertidor (opción D)
+(() => {
+  const g = mk('g', {'data-o':'D'}, L.comp);
+  mk('path', {d:'M680 524 H692 M712 524 H724', stroke:'#4d555c', 'stroke-width':1.5}, g);
+  mk('rect', {x:692, y:517, width:20, height:14, rx:2, fill:'#2d3a46'}, g);
+  mk('path', {d:'M698 520 V528 M706 520 V528', stroke:'#d9dee3', 'stroke-width':1.5}, g);
+  tx(702, 545, 'TVS', 'xs b c', g);
+  mk('rect', {x:780, y:378, width:160, height:140, rx:6, fill:'#3a4652', stroke:'#1f262d', 'stroke-width':1.5}, g);
+  mk('rect', {x:866, y:381, width:68, height:22, rx:3, fill:'#222a31'}, g);
+  mk('rect', {x:786, y:495, width:68, height:22, rx:3, fill:'#222a31'}, g);
+  [[800, 506], [840, 506], [880, 392], [920, 392]].forEach(([x, y]) => screw(x, y, g));
+  tx(880, 416, '−V', 'xs b c w', g); tx(920, 416, '+V', 'xs b c w', g);
+  tx(800, 489, '−Vin', 'xs b c w', g); tx(840, 489, '+Vin', 'xs b c w', g);
+  tx(860, 440, 'RSD-30H-24', 'b c w', g, {style:'font-size:13px'});
+  tx(860, 455, 'Entrada 40–160 V cc', 'xs c w', g);
+  tx(860, 467, 'Salida 24 V · 1,25 A aislada', 'xs c w', g);
+  G.convLed = mk('circle', {cx:918, cy:480, r:4.5, fill:'#33413a'}, g);
+  tx(910, 483, 'DC OK', 'xs e w', g);
+})();
+// Componentes de la opción B
+const RES = {}, DIO = {};
+function branchB(k, yb){
+  const g = mk('g', {'data-o':'B'}, L.comp);
+  mk('rect', {x:764, y:yb - 9, width:36, height:18, rx:3, fill:'#dfe5ea', stroke:'#7d8a96'}, g);
+  mk('rect', {x:769, y:yb - 5, width:26, height:10, rx:2, fill:'#e6f0f8', stroke:'#9fb3c4'}, g);
+  mk('line', {x1:770, y1:yb, x2:794, y2:yb, stroke:'#8a6d2a', 'stroke-width':1.2}, g);
+  tx(782, yb - 13, 'F1.' + k, 'xs b c', g);
+  mk('rect', {x:818, y:yb - 7, width:26, height:14, rx:2, fill:'#2d3a46'}, g);
+  DIO[k] = mk('rect', {x:837, y:yb - 7, width:4, height:14, fill:'#d9dee3'}, g);
+  tx(831, yb - 11, 'V1.' + k, 'xs b c', g);
+  RES[k] = {body:mk('rect', {x:866, y:yb - 11, width:64, height:22, rx:3, fill:'#c9a227', stroke:'#6f5610'}, g)};
+  for (let i = 0; i < 5; i++) mk('line', {x1:874 + i * 12, y1:yb - 11, x2:874 + i * 12, y2:yb + 11, stroke:'rgba(0,0,0,.16)'}, g);
+  RES[k].t = tx(898, yb + 4, '', 'xs b c w', g);
+  tx(898, yb - 15, `R1.${k} · 110 Ω 50 W`, 'xs c', g);
+  mk('rect', {x:948, y:yb - 6, width:16, height:12, rx:3, fill:'#9aa5b0', stroke:'#5d6873'}, g);
+  tx(956, yb + 18, 'TCO', 'xs c', g);
+}
+branchB(1, 416); branchB(2, 466);
+tx(760, 548, 'bus +', 'xs mut', mk('g', {'data-o':'B'}, L.comp));
+// Luminarias
+const LUM = {};
+function luminaire(k, x0){
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:x0, y:682, width:120, height:76, rx:6, fill:'#2f363d', stroke:'#1b2025'}, g);
+  const wd = mk('g', {'data-o':'D'}, g), wb = mk('g', {'data-o':'B'}, g);
+  const ln = (p, d) => mk('path', {d, fill:'none', stroke:'#aab4bd', 'stroke-width':1.4}, p);
+  ln(wd, `M${x0 + 16} 686 V734 M${x0 + 16} 704 H${x0 + 20} M${x0 + 16} 734 H${x0 + 20}`);
+  ln(wd, `M${x0 + 104} 686 V690 H${x0 + 108} V734 M${x0 + 108} 704 H${x0 + 100} M${x0 + 108} 734 H${x0 + 100}`);
+  ln(wb, `M${x0 + 16} 686 V704 H${x0 + 20}`);
+  ln(wb, `M${x0 + 100} 704 H${x0 + 110} V734 H${x0 + 100}`);
+  ln(wb, `M${x0 + 20} 734 H${x0 + 12} V750 H${x0 + 116} V690 H${x0 + 104} V686`);
+  const strips = [];
+  [704, 734].forEach((cy, i) => {
+    const glow = mk('rect', {x:x0 + 14, y:cy - 13, width:92, height:26, rx:12, fill:'#ffd95a', filter:'url(#glow)', opacity:0}, g);
+    mk('rect', {x:x0 + 20, y:cy - 6, width:80, height:12, rx:2, fill:'#e9eef2', stroke:'#9aa6b1'}, g);
+    const dots = [];
+    for (let j = 0; j < 8; j++) dots.push(mk('circle', {cx:x0 + 25 + j * 10, cy, r:3, fill:'#b8c0c7'}, g));
+    strips.push({glow, dots});
+  });
+  mk('rect', {x:x0 + 10, y:676, width:12, height:10, rx:2, fill:'#c5ccd3', stroke:'#59636d'}, g);
+  mk('rect', {x:x0 + 98, y:676, width:12, height:10, rx:2, fill:'#c5ccd3', stroke:'#59636d'}, g);
+  tx(x0 + 28, 696, '+', 's b w', g); tx(x0 + 92, 696, '−', 's b e w', g);
+  tx(x0 + 60, 775, `L01.${k} · ampolleta ${k}`, 'xs b c', g);
+  LUM[k] = {strips, warn:tx(x0 + 60, 672, '', 'xs b c', g, {style:'fill:#b45309'})};
+}
+luminaire(1, 860); luminaire(2, 1036);
+tx(846, 712, 'Numerador', 'xs b e', L.comp); tx(846, 724, 'frontal C01', 'xs e mut', L.comp);
+
+// Multímetro
+const LCD = {};
+(() => {
+  const g = mk('g', {}, L.comp);
+  mk('rect', {x:16, y:16, width:184, height:304, rx:20, fill:'#f0b323', stroke:'#9c6f0a', 'stroke-width':2}, g);
+  mk('rect', {x:28, y:28, width:160, height:284, rx:14, fill:'#2b3036'}, g);
+  LCD.bg = mk('rect', {x:40, y:40, width:136, height:64, rx:6, fill:'#c5d2b2', stroke:'#7f8c6e'}, g);
+  LCD.val = tx(150, 90, '', 'lcd', g);
+  LCD.unit = tx(154, 90, '', 'lcdu', g);
+  LCD.ind = tx(46, 54, '', 'lcds', g);
+  LCD.mode = tx(170, 54, '', 'lcds e', g);
+  LCD.note = tx(108, 122, '', 'note', g);
+  mk('circle', {cx:108, cy:206, r:40, fill:'#1e2226', stroke:'#59616a', 'stroke-width':2}, g);
+  LCD.knob = mk('g', {}, g);
+  mk('circle', {cx:0, cy:0, r:28, fill:'#3a4148', stroke:'#14181b'}, LCD.knob);
+  mk('rect', {x:-3, y:-30, width:6, height:22, rx:3, fill:'#f0b323'}, LCD.knob);
+  MODES.forEach(m => {
+    const a = m.ang * Math.PI / 180;
+    const x = 108 + 58 * Math.sin(a), y = 206 - 58 * Math.cos(a) + 4;
+    m.el = tx(x, y, m.sym, 'dial', g);
+    if (m.id === 'A') tx(x, y + 11, 'pinza', 'dial', g, {style:'font-size:8px'});
+    const h = mk('rect', {x:x - 18, y:y - 14, width:36, height:m.id === 'A' ? 30 : 20, class:'uihit'}, L.ui);
+    h.addEventListener('click', () => setMode(m.id));
+  });
+  const kh = mk('circle', {cx:108, cy:206, r:30, class:'uihit'}, L.ui);
+  kh.addEventListener('click', () => { const i = MODES.findIndex(m => m.id === s.mode); setMode(MODES[(i + 1) % MODES.length].id); });
+  mk('circle', {cx:78, cy:282, r:10, fill:'#111', stroke:'#666', 'stroke-width':2}, g);
+  mk('circle', {cx:78, cy:282, r:4, fill:'#333'}, g);
+  mk('circle', {cx:138, cy:282, r:10, fill:'#111', stroke:'#c62828', 'stroke-width':2}, g);
+  mk('circle', {cx:138, cy:282, r:4, fill:'#333'}, g);
+  tx(78, 304, 'COM', 'dial', g, {style:'font-size:9px'});
+  tx(138, 304, 'V Ω ▶|', 'dial', g, {style:'font-size:9px'});
+})();
+
+// Zonas clicables: BS e IE-01
+(() => {
+  const h1 = mk('rect', {x:236, y:360, width:76, height:58, class:'uihit'}, L.ui);
+  h1.addEventListener('click', () => { s.bs = !s.bs; render(); });
+  const h2 = mk('rect', {x:376, y:376, width:48, height:56, class:'uihit'}, L.ui);
+  h2.addEventListener('click', () => { s.ie = !s.ie; render(); });
+})();
+
+// Puntos de medición
+const TPEL = {};
+PTS.forEach(p => {
+  const g = mk('g', {class:'tp', 'data-id':p.id, 'data-o':p.o === 'DB' ? null : p.o}, L.pts);
+  mk('circle', {cx:p.x, cy:p.y, r:5, class:'dot'}, g);
+  const h = mk('circle', {cx:p.x, cy:p.y, r:11, class:'hit'}, g);
+  h.addEventListener('click', () => { if (s.mode !== 'A') placeProbe(s.active, p.id); });
+  h.addEventListener('pointerenter', () => showTip(p.x, p.y, lbl(p.id)));
+  h.addEventListener('pointerleave', hideTip);
+  TPEL[p.id] = g;
+});
+// Sitios para la pinza
+SITES.forEach(x => {
+  const g = mk('g', {class:'site', 'data-o':x.o === 'DB' ? null : x.o}, L.sites);
+  mk('circle', {cx:x.x, cy:x.y, r:12, class:'ring'}, g);
+  const h = mk('circle', {cx:x.x, cy:x.y, r:14, class:'hit'}, g);
+  h.addEventListener('click', () => placeClamp(x.id));
+  h.addEventListener('pointerenter', () => showTip(x.x, x.y, x.l));
+  h.addEventListener('pointerleave', hideTip);
+});
+
+// Tooltip
+const TIP = mk('g', {style:'display:none'}, L.tip);
+const tipR = mk('rect', {rx:5, fill:'#1f2a33', opacity:.92}, TIP);
+const tipT = tx(0, 0, '', 's w', TIP);
+function showTip(x, y, str){
+  tipT.textContent = str;
+  TIP.style.display = '';
+  const w = tipT.getComputedTextLength() + 14;
+  let tx0 = x + 12, ty0 = y - 30;
+  if (tx0 + w > 1194) tx0 = x - 12 - w;
+  if (ty0 < 4) ty0 = y + 14;
+  tipR.setAttribute('x', tx0); tipR.setAttribute('y', ty0); tipR.setAttribute('width', w); tipR.setAttribute('height', 20);
+  tipT.setAttribute('x', tx0 + 7); tipT.setAttribute('y', ty0 + 14);
+}
+function hideTip(){ if (!drag) TIP.style.display = 'none'; }
+
+// Puntas, cables y pinza
+const LEAD = {
+  red:mk('path', {fill:'none', stroke:'#c62828', 'stroke-width':3.5, 'stroke-linecap':'round'}, L.leads),
+  black:mk('path', {fill:'none', stroke:'#1b1b1b', 'stroke-width':3.5, 'stroke-linecap':'round'}, L.leads),
+  clamp:mk('path', {fill:'none', stroke:'#3a4148', 'stroke-width':3.5, 'stroke-linecap':'round'}, L.leads)
+};
+const JACK = {red:{x:138, y:282}, black:{x:78, y:282}};
+function mkProbe(k, col, dark){
+  const g = mk('g', {class:'probe'}, L.tools);
+  mk('line', {x1:0, y1:0, x2:0, y2:-14, stroke:'#c7cdd3', 'stroke-width':3, 'stroke-linecap':'round'}, g);
+  mk('rect', {x:-9, y:-19, width:18, height:5, rx:2, fill:dark}, g);
+  mk('rect', {x:-5.5, y:-58, width:11, height:40, rx:4, fill:col, stroke:dark}, g);
+  mk('rect', {x:-3, y:-64, width:6, height:7, rx:2, fill:dark}, g);
+  mk('rect', {x:-16, y:-70, width:32, height:76, fill:'transparent'}, g);
+  g.addEventListener('pointerdown', e => startDrag(e, k));
+  return g;
+}
+const PROBE = {red:mkProbe('red', '#d32f2f', '#7f1414'), black:mkProbe('black', '#2a2a2a', '#000')};
+const CLAMP = mk('g', {class:'clampg'}, L.tools);
+mk('circle', {cx:0, cy:0, r:15, fill:'none', stroke:'#f0b323', 'stroke-width':7, 'stroke-dasharray':'80 14.2', transform:'rotate(-60)'}, CLAMP);
+mk('circle', {cx:0, cy:0, r:15, fill:'none', stroke:'#8a650a', 'stroke-width':1, 'stroke-dasharray':'80 14.2', transform:'rotate(-60)'}, CLAMP);
+mk('path', {d:'M-6 -2 H5 M1 -6 L5 -2 L1 2', fill:'none', stroke:'#8a650a', 'stroke-width':1.6, transform:'translate(0 -23)'}, CLAMP);
+mk('rect', {x:-7, y:17, width:14, height:42, rx:4, fill:'#2b3036'}, CLAMP);
+mk('rect', {x:-24, y:-30, width:48, height:92, fill:'transparent'}, CLAMP);
+CLAMP.addEventListener('pointerdown', e => startDrag(e, 'clamp'));
+
+/* ---------- Interacción ---------- */
+let drag = null;
+function svgPt(e){
+  const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+const visPts = () => PTS.filter(p => p.o.includes(s.opt));
+const visSites = () => SITES.filter(x => x.o.includes(s.opt));
+function nearest(list, x, y, r){
+  let best = null, bd = r * r;
+  for (const p of list){ const d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd){ bd = d; best = p; } }
+  return best;
+}
+function startDrag(e, k){
+  e.preventDefault();
+  const p = svgPt(e);
+  const cur = k === 'clamp' ? s.clamp : s.probe[k];
+  drag = {k, dx:cur.x - p.x, dy:cur.y - p.y, id:e.pointerId};
+  if (k !== 'clamp'){ s.active = k; syncActive(); }
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+}
+function onMove(e){
+  if (!drag || e.pointerId !== drag.id) return;
+  const p = svgPt(e);
+  let x = Math.max(8, Math.min(1192, p.x + drag.dx)), y = Math.max(72, Math.min(772, p.y + drag.dy));
+  if (drag.k === 'clamp'){
+    const n = nearest(visSites(), x, y, 16);
+    s.clamp = n ? {x:n.x, y:n.y, site:n.id} : {x, y, site:null};
+    if (n) showTip(n.x, n.y, n.l); else TIP.style.display = 'none';
+  } else {
+    const n = nearest(visPts(), x, y, 16);
+    s.probe[drag.k] = n ? {x:n.x, y:n.y, node:n.id} : {x, y, node:null};
+    if (n) showTip(n.x, n.y, lbl(n.id)); else TIP.style.display = 'none';
+  }
+  render();
+}
+function endDrag(){
+  drag = null; TIP.style.display = 'none';
+  window.removeEventListener('pointermove', onMove);
+  window.removeEventListener('pointerup', endDrag);
+  window.removeEventListener('pointercancel', endDrag);
+  render();
+}
+function placeProbe(k, id){
+  if (!id){ s.probe[k] = {x:PARK[k].x, y:PARK[k].y, node:null}; }
+  else { const p = PT[id]; s.probe[k] = {x:p.x, y:p.y, node:id}; }
+  render();
+}
+function placeClamp(id){
+  if (!id) s.clamp = {x:PARK.clamp.x, y:PARK.clamp.y, site:null};
+  else { const x = SITE[id]; s.clamp = {x:x.x, y:x.y, site:id}; }
+  render();
+}
+function setMode(m){ s.mode = m; render(); }
+function syncActive(){
+  document.querySelectorAll('#activeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === s.active)));
+}
+
+/* ---------- Render ---------- */
+let SOL = null, lastM = null;
+function lerpHex(a, b, t){
+  const pa = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), pb = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
+  return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+function leadPath(j, x, y){
+  const tx0 = x, ty0 = y - 64;
+  return `M${j.x} ${j.y} C${j.x} ${j.y + 80} ${tx0} ${ty0 - 80} ${tx0} ${ty0}`;
+}
+function render(){
+  const S = solve(); SOL = S;
+  const vis = !s.hidden && s.fault !== 'none';
+  // Flujo de corriente
+  for (const id in W){
+    const w = W[id];
+    const I = w.o.includes(s.opt) ? Math.abs(w.cur(S) || 0) : 0;
+    if (s.flow && I > 0.002){
+      w.fl.style.display = '';
+      w.fl.style.animationDuration = Math.min(6, Math.max(0.35, 0.45 / I)).toFixed(2) + 's';
+    } else w.fl.style.display = 'none';
+  }
+  // Luminarias
+  [1, 2].forEach(k => {
+    const b = S.bright[k], lit = Math.min(1, b);
+    LUM[k].strips.forEach(st => {
+      st.glow.setAttribute('opacity', (lit * 0.85).toFixed(2));
+      const col = lit > 0.02 ? lerpHex('#d9c98a', '#fff7cf', Math.min(1, lit)) : '#b8c0c7';
+      st.dots.forEach(d => d.setAttribute('fill', col));
+    });
+    LUM[k].warn.textContent = b > 1.08 ? `⚠ ${Math.round(b * 100)} % In` : '';
+  });
+  // Convertidor
+  G.convLed.setAttribute('fill', S.outOn ? '#36d17c' : '#33413a');
+  G.convLed.setAttribute('filter', S.outOn ? 'url(#soft)' : '');
+  // Resistencias y diodos (B)
+  [1, 2].forEach(k => {
+    const T = s.temp[k];
+    RES[k].body.setAttribute('fill', lerpHex('#c9a227', '#e0451b', Math.max(0, Math.min(1, (T - 45) / 110))));
+    RES[k].t.textContent = Math.round(T) + ' °C';
+    DIO[k].setAttribute('x', k === 1 && s.fault === 'diodo' && s.opt === 'B' ? 821 : 837);
+  });
+  // BS, IE-01, generador, título
+  G.bs.setAttribute('transform', s.bs ? '' : 'rotate(-38 248 400)');
+  G.ieLev.setAttribute('y', s.ie ? 384 : 404);
+  G.ieLev.setAttribute('fill', s.ie ? '#2a7d4f' : '#b23b2e');
+  G.ieTxt.textContent = s.ie ? 'ON' : 'OFF';
+  const genOn = s.src === 'run' || s.src === 'over';
+  G.genC.setAttribute('fill', genOn ? '#e5f6ec' : '#fff');
+  G.genT.textContent = {stop:'Motor detenido: sin generación', run:'En marcha: regula 74 V', crank:'Arranque: la batería cae a 45 V', over:'Regulador en falla: 90 V'}[s.src];
+  G.boxT.textContent = s.opt === 'D' ? 'Caja MCI-C01 · Opción D (convertidor 74 → 24 V)' : 'Caja MCI-C01 · Opción B (resistencia serie)';
+  drawMarks(S);
+  // Herramientas
+  const isA = s.mode === 'A';
+  L.sites.style.display = isA ? '' : 'none';
+  L.pts.classList.toggle('faded', isA);
+  ['red', 'black'].forEach(k => {
+    const p = s.probe[k];
+    PROBE[k].style.display = isA ? 'none' : '';
+    LEAD[k].style.display = isA ? 'none' : '';
+    PROBE[k].setAttribute('transform', `translate(${p.x} ${p.y})`);
+    LEAD[k].setAttribute('d', leadPath(JACK[k], p.x, p.y));
+  });
+  CLAMP.style.display = isA ? '' : 'none';
+  LEAD.clamp.style.display = isA ? '' : 'none';
+  CLAMP.setAttribute('transform', `translate(${s.clamp.x} ${s.clamp.y})`);
+  LEAD.clamp.setAttribute('d', `M108 300 C108 380 ${s.clamp.x} ${s.clamp.y + 140} ${s.clamp.x} ${s.clamp.y + 59}`);
+  for (const id in TPEL){
+    TPEL[id].classList.toggle('on-red', s.probe.red.node === id);
+    TPEL[id].classList.toggle('on-black', s.probe.black.node === id);
+  }
+  // Multímetro
+  const M = reading(S); lastM = M;
+  const off = s.mode === 'off';
+  LCD.bg.setAttribute('fill', off ? '#9aa38f' : '#c5d2b2');
+  LCD.val.textContent = M.txt; LCD.unit.textContent = M.unit;
+  LCD.ind.textContent = off ? '' : (s.mode === 'A' ? 'DC  HALL' : 'DC  AUTO') + (M.beep ? '  •)))' : '');
+  LCD.mode.textContent = off ? '' : MODE[s.mode].sym;
+  LCD.note.textContent = M.warn ? '¡TENSIÓN PRESENTE!' : (M.note.startsWith('Puntos en circuitos aislados') || M.note.startsWith('El convertidor aísla') ? 'SIN REFERENCIA COMÚN' : '');
+  LCD.knob.setAttribute('transform', `translate(108 206) rotate(${MODE[s.mode].ang})`);
+  MODES.forEach(m => m.el.classList.toggle('on', m.id === s.mode));
+  // Panel de lectura
+  $('roVal').textContent = off ? '—' : M.txt;
+  $('roUnit').textContent = off ? '' : M.unit;
+  $('roWhere').innerHTML = off ? '' : s.mode === 'A'
+    ? `<b>Pinza:</b> ${M.site ? SITE[M.site].l : 'sin cable'}`
+    : `<b>Roja:</b> ${M.red ? lbl(M.red) : 'en el aire'} · <b>Negra:</b> ${M.black ? lbl(M.black) : 'en el aire'}`;
+  $('roNote').textContent = M.note;
+  $('roNote').className = 'ro-note' + (M.warn ? ' warn' : '');
+  syncControls();
+  renderStatus(S);
+  checkTasks(M);
+}
+
+function drawMarks(S){
+  const g = L.marks; g.replaceChildren();
+  const f = s.fault, vis = !s.hidden && f !== 'none';
+  const blown = (x, y, w, h) => {
+    mk('rect', {x, y, width:w, height:h, rx:2, fill:'#4a3b2a', opacity:.85}, g);
+    tx(x + w / 2, y + h + 12, 'fundido', 'xs b c', g, {style:'fill:#c0392b'});
+  };
+  const cut = (x, y) => {
+    mk('rect', {x:x - 7, y:y - 7, width:14, height:14, fill:C.board}, g);
+    mk('path', {d:`M${x - 5} ${y - 5} L${x + 5} ${y + 5} M${x + 5} ${y - 5} L${x - 5} ${y + 5}`, stroke:'#c0392b', 'stroke-width':2.4}, g);
+    tx(x + 10, y + 4, 'corte', 'xs b', g, {style:'fill:#c0392b'});
+  };
+  const tag = (x, y, str) => {
+    const t = tx(x, y, str, 'xs b c', g, {style:'fill:#fff'});
+    const w = t.getComputedTextLength() + 12;
+    const r = mk('rect', {x:x - w / 2, y:y - 11, width:w, height:15, rx:4, fill:'#c0392b'}, g);
+    g.insertBefore(r, t);
+  };
+  const spark = (x, y) => {
+    mk('path', {d:`M${x} ${y - 14} L${x + 4} ${y - 4} L${x + 14} ${y} L${x + 4} ${y + 4} L${x} ${y + 14} L${x - 4} ${y + 4} L${x - 14} ${y} L${x - 4} ${y - 4} Z`, fill:'#ffcf3f', stroke:'#c0392b', 'stroke-width':1.5}, g);
+    tx(x, y + 28, 'corto', 'xs b c', g, {style:'fill:#ffcf3f'});
+  };
+  if (vis && f === 'cafe') cut(632, 378);
+  if (vis && f === 'pol') tag(510, 476, '⚠ polaridad invertida');
+  if (vis && f === 'flojo'){
+    mk('circle', {cx:724, cy:388, r:11, fill:'none', stroke:'#e67e22', 'stroke-width':3}, g);
+    tx(740, 378, 'flojo', 'xs b', g, {style:'fill:#c2410c'});
+  }
+  if (s.opt === 'D'){
+    if (vis && f === 'f1') blown(676, 415, 8, 32);
+    if (vis && (f === 'f21' || f === 'corto1')) blown(996, 415, 8, 32);
+    if (vis && f === 'conv') tag(860, 400, '✕ convertidor dañado');
+    if (vis && f === 'rojo2') cut(1060, 560);
+    if (vis && f === 'corto1') spark(920, 719);
+  } else {
+    if (vis && f === 'f11') blown(769, 411, 26, 10);
+    [1, 2].forEach(k => {
+      if (!s.hidden && ((k === 1 && f === 'tco') || s.tcoTrip[k])){
+        const y = k === 1 ? 416 : 466;
+        mk('path', {d:`M950 ${y - 6} L962 ${y + 6} M962 ${y - 6} L950 ${y + 6}`, stroke:'#c0392b', 'stroke-width':2.4}, g);
+      }
+    });
+    if (vis && f === 'corto1') spark(920, 719);
+  }
+}
+
+function renderStatus(S){
+  const rows = [];
+  rows.push(['Fuente', `${fc(S.Vs, 1)} V · ${SOURCES[s.src].short.replace(/ \(.*\)/, '')}`, '']);
+  rows.push(['BS (batería)', s.bs ? 'Cerrado' : 'Abierto', s.bs ? 'st-ok' : 'st-bad']);
+  rows.push(['IE-01', s.ie ? 'ON' : 'OFF', s.ie ? 'st-ok' : 'st-bad']);
+  if (s.opt === 'D'){
+    const c = S.conv;
+    rows.push(['LED DC OK', c === 'on' ? 'Encendido' : c === 'hic' ? 'Parpadea (reinicio)' : 'Apagado', c === 'on' ? 'st-ok' : c === 'hic' ? 'st-warn' : 'st-bad']);
+  }
+  [1, 2].forEach(k => {
+    const b = S.bright[k];
+    let t, cl;
+    if (b < 0.01){ t = 'Apagada'; cl = 'st-bad'; }
+    else if (b > 1.08){ t = `Sobrecorriente · ${Math.round(b * 100)}\u00a0% In`; cl = 'st-warn'; }
+    else if (b < 0.9){ t = `Tenue · ${Math.round(b * 100)}\u00a0% In`; cl = 'st-warn'; }
+    else { t = `Encendida · ${Math.round(b * 100)}\u00a0%`; cl = 'st-ok'; }
+    rows.push([`Luminaria L01.${k}`, t, cl]);
+  });
+  if (s.opt === 'B'){
+    [1, 2].forEach(k => {
+      const T = s.temp[k];
+      rows.push([`R1.${k} (temperatura)`, `${Math.round(T)} °C`, T > 110 ? 'st-bad' : T > 80 ? 'st-warn' : '']);
+    });
+    if (!s.hidden) [1, 2].forEach(k => { if (s.tcoTrip[k]) rows.push([`TCO1.${k}`, 'Actuó (abierto)', 'st-bad']); });
+  }
+  $('status').innerHTML = rows.map(([a, b, c]) => `<dt>${a}</dt><dd class="${c}">${b}</dd>`).join('');
+}
+
+/* ---------- Protocolo ---------- */
+const pair = (M, a, b) => M.red === a && M.black === b;
+const either = (M, a, b) => pair(M, a, b) || pair(M, b, a);
+const TASKS = {
+  D: [
+    {id:'d1', t:'Tensión de batería: roja en BAT+, negra en BAT−.', p:{m:'V', r:'bp', b:'bn'}, ok:M => M.mode === 'V' && pair(M, 'bp', 'bn')},
+    {id:'d2', t:'Llegada a la caja: roja en X1:1, negra en X1:2. Debe ser positiva.', p:{m:'V', r:'x11a', b:'x12a'}, ok:M => M.mode === 'V' && ['x11a', 'x11b'].includes(M.red) && ['x12a', 'x12b'].includes(M.black) && M.val > 30},
+    {id:'d3', t:'Caída en el cable azul: X1:2 ↑ y Toma − (menos de 0,1 V).', p:{m:'V', r:'x12a', b:'pn'}, ok:M => M.mode === 'V' && either(M, 'x12a', 'pn')},
+    {id:'d4', t:'Entrada del convertidor: +Vin / −Vin.', p:{m:'V', r:'vinp', b:'vinn'}, ok:M => M.mode === 'V' && pair(M, 'vinp', 'vinn')},
+    {id:'d5', t:'Salida del convertidor: +V / −V ≈ 24 V.', p:{m:'V', r:'vop', b:'von'}, ok:M => M.mode === 'V' && pair(M, 'vop', 'von')},
+    {id:'d6', t:'Tensión en los bornes de la luminaria L01.1.', p:{m:'V', r:'l1p', b:'l1n'}, ok:M => M.mode === 'V' && pair(M, 'l1p', 'l1n')},
+    {id:'d7', t:'Corriente de entrada: pinza en el cable café.', p:{m:'A', site:'cafe'}, ok:M => M.mode === 'A' && M.site === 'cafe'},
+    {id:'d8', t:'Con BS abierto: continuidad de F1 (X1:1 ↑ ↔ X1:1 ↓) en Ω.', p:{m:'R', r:'x11a', b:'x11b'}, ok:M => M.mode === 'R' && either(M, 'x11a', 'x11b') && M.valid}
+  ],
+  B: [
+    {id:'b1', t:'Tensión de batería: roja en BAT+, negra en BAT−.', p:{m:'V', r:'bp', b:'bn'}, ok:M => M.mode === 'V' && pair(M, 'bp', 'bn')},
+    {id:'b2', t:'Llegada a la caja: roja en X1:1, negra en X1:2. Debe ser positiva.', p:{m:'V', r:'x11a', b:'x12a'}, ok:M => M.mode === 'V' && ['x11a', 'x11b'].includes(M.red) && ['x12a', 'x12b'].includes(M.black) && M.val > 30},
+    {id:'b3', t:'Caída en R1.1: roja en V1.1 cátodo, negra en R1.1 salida (≈ 25 V).', p:{m:'V', r:'d1k', b:'r1o'}, ok:M => M.mode === 'V' && pair(M, 'd1k', 'r1o')},
+    {id:'b4', t:'Un tramo de L01.1: roja en L01.1 +, negra en la unión (≈ 24 V).', p:{m:'V', r:'l1p', b:'l1m'}, ok:M => M.mode === 'V' && pair(M, 'l1p', 'l1m')},
+    {id:'b5', t:'Corriente de la rama: pinza en el rojo de L01.1 (≈ 0,23 A).', p:{m:'A', site:'r1'}, ok:M => M.mode === 'A' && M.site === 'r1'},
+    {id:'b6', t:'Caída en el cable azul: X1:2 ↑ y Toma −.', p:{m:'V', r:'x12a', b:'pn'}, ok:M => M.mode === 'V' && either(M, 'x12a', 'pn')},
+    {id:'b7', t:'Con BS abierto: diodo V1.1 en ▶| (roja en el ánodo, negra en el cátodo ≈ 0,56 V).', p:{m:'dio', r:'f1o', b:'d1k'}, ok:M => M.mode === 'dio' && pair(M, 'f1o', 'd1k') && M.valid},
+    {id:'b8', t:'Con BS abierto: valor de R1.1 en Ω (≈ 110 Ω).', p:{m:'R', r:'d1k', b:'r1o'}, ok:M => M.mode === 'R' && either(M, 'd1k', 'r1o') && M.valid}
+  ]
+};
+function renderTasks(){
+  const ol = $('tasks'); ol.replaceChildren();
+  const done = s.done[s.opt];
+  TASKS[s.opt].forEach(t => {
+    const li = document.createElement('li');
+    if (done.has(t.id)) li.className = 'done';
+    li.innerHTML = `<span class="chk" aria-hidden="true">${done.has(t.id) ? '✓' : ''}</span><span class="tt">${t.t}</span>`;
+    const b = document.createElement('button');
+    b.className = 'mini'; b.textContent = 'Ubicar';
+    b.setAttribute('aria-label', 'Ubicar el multímetro: ' + t.t);
+    b.addEventListener('click', () => {
+      s.mode = t.p.m;
+      if (t.p.m === 'A') placeClamp(t.p.site);
+      else { const pr = PT[t.p.r], pb = PT[t.p.b]; s.probe.red = {x:pr.x, y:pr.y, node:t.p.r}; s.probe.black = {x:pb.x, y:pb.y, node:t.p.b}; render(); }
+    });
+    li.appendChild(b);
+    ol.appendChild(li);
+  });
+  $('prog').textContent = `${done.size}/${TASKS[s.opt].length}`;
+}
+function checkTasks(M){
+  let ch = false;
+  TASKS[s.opt].forEach(t => { if (!s.done[s.opt].has(t.id) && t.ok(M)){ s.done[s.opt].add(t.id); ch = true; } });
+  if (ch) renderTasks();
+}
+
+/* ---------- Controles HTML ---------- */
+function fillSelect(sel, items, emptyLabel){
+  sel.replaceChildren();
+  const o0 = document.createElement('option'); o0.value = ''; o0.textContent = emptyLabel; sel.appendChild(o0);
+  const groups = {};
+  items.forEach(it => {
+    const z = it.z || 'Cables';
+    if (!groups[z]){ groups[z] = document.createElement('optgroup'); groups[z].label = z; sel.appendChild(groups[z]); }
+    const o = document.createElement('option'); o.value = it.id; o.textContent = it.label; groups[z].appendChild(o);
+  });
+}
+function fillFaults(){
+  const sel = $('fault'); sel.replaceChildren();
+  FAULTS[s.opt].forEach(f => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.name; sel.appendChild(o); });
+  const oh = document.createElement('option'); oh.value = '__hidden'; oh.textContent = '— Falla oculta (sorpresa) —'; oh.hidden = true; sel.appendChild(oh);
+  const d = $('diagSel'); d.replaceChildren();
+  const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Elige tu diagnóstico…'; d.appendChild(o0);
+  FAULTS[s.opt].forEach(f => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.name; d.appendChild(o); });
+}
+function applyOpt(){
+  svg.querySelectorAll('[data-o]').forEach(e => { e.style.display = e.dataset.o === s.opt ? '' : 'none'; });
+  document.querySelectorAll('#optSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.opt === s.opt)));
+  const pts = visPts().map(p => ({id:p.id, label:lbl(p.id), z:p.z}));
+  fillSelect($('selRed'), pts, '— En el aire (sin contacto) —');
+  fillSelect($('selBlack'), pts, '— En el aire (sin contacto) —');
+  fillSelect($('selClamp'), visSites().map(x => ({id:x.id, label:x.l})), '— Sin cable —');
+  ['red', 'black'].forEach(k => { const n = s.probe[k].node; if (n && !PT[n].o.includes(s.opt)) s.probe[k] = {x:PARK[k].x, y:PARK[k].y, node:null}; });
+  if (s.clamp.site && !SITE[s.clamp.site].o.includes(s.opt)) s.clamp = {x:PARK.clamp.x, y:PARK.clamp.y, site:null};
+  s.fault = 'none'; s.hidden = false; s.temp = {1:45, 2:45}; s.tcoTrip = {1:false, 2:false};
+  fillFaults(); renderTasks(); setDiagMsg('', '');
+  render();
+}
+function setDiagMsg(t, cls){ const m = $('diagMsg'); m.textContent = t; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+function syncControls(){
+  $('src').value = s.src;
+  const tb = $('tBS'); tb.setAttribute('aria-pressed', String(s.bs)); tb.textContent = s.bs ? 'BS cerrado' : 'BS abierto';
+  const ti = $('tIE'); ti.setAttribute('aria-pressed', String(s.ie)); ti.textContent = s.ie ? 'IE-01 ON' : 'IE-01 OFF';
+  $('tFlow').setAttribute('aria-pressed', String(s.flow));
+  document.querySelectorAll('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === s.mode)));
+  const isA = s.mode === 'A';
+  $('probeCtl').hidden = isA; $('clampCtl').hidden = !isA;
+  $('selRed').value = s.probe.red.node || '';
+  $('selBlack').value = s.probe.black.node || '';
+  $('selClamp').value = s.clamp.site || '';
+  $('fault').value = s.hidden ? '__hidden' : s.fault;
+  $('fault').disabled = s.hidden;
+  $('diag').hidden = !s.hidden;
+  $('btnTco').hidden = !(s.opt === 'B' && !s.hidden && (s.tcoTrip[1] || s.tcoTrip[2]));
+  const F = FAULTS[s.opt].find(x => x.id === s.fault);
+  $('faultInfo').innerHTML = (!s.hidden && s.fault !== 'none' && F) ? `<b>Qué deberías medir</b>${F.hint}` : '';
+}
+
+document.querySelectorAll('#optSeg button').forEach(b => b.addEventListener('click', () => { if (s.opt !== b.dataset.opt){ s.opt = b.dataset.opt; applyOpt(); } }));
+document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+document.querySelectorAll('#activeSeg button').forEach(b => b.addEventListener('click', () => { s.active = b.dataset.p; syncActive(); }));
+$('src').addEventListener('change', e => { s.src = e.target.value; render(); });
+$('tBS').addEventListener('click', () => { s.bs = !s.bs; render(); });
+$('tIE').addEventListener('click', () => { s.ie = !s.ie; render(); });
+$('tFlow').addEventListener('click', () => { s.flow = !s.flow; render(); });
+$('selRed').addEventListener('change', e => placeProbe('red', e.target.value));
+$('selBlack').addEventListener('change', e => placeProbe('black', e.target.value));
+$('selClamp').addEventListener('change', e => placeClamp(e.target.value));
+$('fault').addEventListener('change', e => { s.fault = e.target.value; s.hidden = false; s.tcoTrip = {1:false, 2:false}; setDiagMsg('', ''); render(); });
+$('btnClear').addEventListener('click', () => { s.fault = 'none'; s.hidden = false; s.tcoTrip = {1:false, 2:false}; setDiagMsg('', ''); render(); });
+$('btnSurprise').addEventListener('click', () => {
+  const list = FAULTS[s.opt].filter(f => f.id !== 'none' && f.id !== s.fault);
+  s.fault = list[Math.floor(Math.random() * list.length)].id;
+  s.hidden = true; s.tcoTrip = {1:false, 2:false}; s.temp = {1:45, 2:45};
+  $('diagSel').value = '';
+  setDiagMsg('Hay una falla oculta. Mide desde la fuente hacia las luminarias y elige tu diagnóstico.', '');
+  render();
+});
+$('btnCheck').addEventListener('click', () => {
+  const v = $('diagSel').value;
+  if (!v){ setDiagMsg('Elige primero una falla de la lista.', 'bad'); return; }
+  if (v === s.fault){ s.hidden = false; setDiagMsg('✓ Correcto. Bien diagnosticado.', 'ok'); render(); }
+  else setDiagMsg('✗ No es esa. Sigue midiendo: busca dónde aparece la tensión completa o dónde se pierde.', 'bad');
+});
+$('btnReveal').addEventListener('click', () => {
+  s.hidden = false;
+  const F = FAULTS[s.opt].find(x => x.id === s.fault);
+  setDiagMsg('La falla era: ' + F.name + '.', '');
+  render();
+});
+$('btnTco').addEventListener('click', () => { s.tcoTrip = {1:false, 2:false}; render(); });
+$('btnLog').addEventListener('click', () => {
+  const M = lastM; if (!M) return;
+  const where = M.mode === 'off' ? '—' : M.mode === 'A' ? 'Pinza: ' + (M.site ? SITE[M.site].l : 'sin cable')
+    : `Roja: ${M.red ? lbl(M.red) : 'en el aire'} · Negra: ${M.black ? lbl(M.black) : 'en el aire'}`;
+  s.log.push({n:s.log.length + 1, f:MODE[M.mode].name, where, val:M.mode === 'off' ? '—' : `${M.txt} ${M.unit}`,
+    cond:`Opción ${s.opt} · ${SOURCES[s.src].short} · BS ${s.bs ? 'cerrado' : 'abierto'} · IE-01 ${s.ie ? 'ON' : 'OFF'}`});
+  renderLog();
+});
+$('btnClearLog').addEventListener('click', () => { s.log = []; renderLog(); });
+function renderLog(){
+  const tb = $('logBody'); tb.replaceChildren();
+  s.log.slice().reverse().forEach(r => {
+    const tr = document.createElement('tr');
+    [r.n, r.f, r.where, r.val, r.cond].forEach((v, i) => { const td = document.createElement('td'); td.textContent = v; if (i === 3) td.className = 'num'; tr.appendChild(td); });
+    tb.appendChild(tr);
+  });
+  $('logEmpty').hidden = s.log.length > 0;
+}
+
+/* ---------- Bucle térmico y reinicio cíclico ---------- */
+let ticks = 0;
+setInterval(() => {
+  ticks++;
+  let ch = false;
+  if (SOL && SOL.conv === 'hic' && ticks % 5 === 0){ s.hicPhase = !s.hicPhase; ch = true; }
+  if (s.opt === 'B' && SOL){
+    [1, 2].forEach(k => {
+      const T = s.temp[k], nt = T + (SOL.Tss[k] - T) * (0.1 / 6);
+      if (Math.abs(nt - T) > 0.005){ s.temp[k] = nt; ch = true; }
+      if (nt >= 130 && !s.tcoTrip[k]){ s.tcoTrip[k] = true; ch = true; }
+    });
+  }
+  if (ch && !drag) render();
+}, 100);
+
+applyOpt();
+renderLog();
+})();
+</script>
+</body>
+</html>
