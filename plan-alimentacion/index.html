@@ -225,6 +225,33 @@ h1 span{color:var(--accent)}
 .float-note li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--c);margin-top:7px}
 .float-note .fn-foot{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
 
+/* Lista de compras */
+.shop-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px}
+.shop-prog{display:grid;gap:6px;flex:1 1 260px;max-width:420px}
+.shop-prog .lbl{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.shop-prog .lbl b{font-family:var(--f-mono);font-weight:600}
+.shop-actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:999px;font-weight:600;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.warn{border-color:var(--micro);color:var(--micro)}
+.shop-note{font-size:14px;color:var(--muted);max-width:75ch}
+.copy-box{width:100%;min-height:160px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-mono);font-size:12px}
+.shop-cols{columns:2 340px;column-gap:20px}
+.shop-cat{break-inside:avoid;margin:0 0 20px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px 8px}
+.shop-cat h3{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:18px;font-weight:700;margin-bottom:6px}
+.shop-cat h3 small{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted)}
+.shop-cat.done h3{color:var(--accent)}
+.shop-list{list-style:none;margin:0;padding:0}
+.shop-list label{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:9px 0;border-top:1px dotted var(--line);cursor:pointer}
+.shop-list li:first-child label{border-top:0}
+.shop-list input{margin:3px 0 0;accent-color:var(--accent)}
+.shop-list .nm{font-weight:600}
+.shop-list .qty{font-family:var(--f-mono);font-size:12px;color:var(--ink);text-align:right;max-width:20ch}
+.shop-list .uso{grid-column:2/-1;font-size:12px;color:var(--muted)}
+.shop-list input:checked ~ .nm,.shop-list input:checked ~ .qty{text-decoration:line-through;color:var(--muted)}
+@media (max-width:520px){.view-btn{padding:8px 11px;font-size:13px}.views{gap:2px}}
+
 .foot{font-size:13px;color:var(--muted);max-width:75ch;display:grid;gap:6px;padding-top:20px;border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
@@ -242,6 +269,7 @@ h1 span{color:var(--accent)}
     <div class="views" role="tablist" aria-label="Vista">
       <button class="view-btn" id="tabMenu" role="tab" aria-selected="true" data-view="menu">Menú semanal</button>
       <button class="view-btn" id="tabRec" role="tab" aria-selected="false" data-view="recetas">Recetario</button>
+      <button class="view-btn" id="tabShop" role="tab" aria-selected="false" data-view="compras">Lista de compras</button>
     </div>
   </header>
 
@@ -251,7 +279,7 @@ h1 span{color:var(--accent)}
     <section style="display:grid;gap:14px">
       <div class="section-head">
         <h2>La semana completa</h2>
-        <p>Pasa el mouse para ver ingredientes · clic para la receta</p>
+        <p>Pasa el mouse para ver ingredientes · clic para la receta · <button class="link-btn" data-view="compras">Ver la lista de compras →</button></p>
       </div>
       <div class="week-scroll"><table class="week" id="week"></table></div>
     </section>
@@ -277,6 +305,26 @@ h1 span{color:var(--accent)}
       <label class="search"><span class="eyebrow" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Buscar receta</span><input id="recSearch" type="search" placeholder="Buscar por plato o ingrediente (ej. palta)"></label>
     </div>
     <div id="recBody" style="display:grid;gap:30px"></div>
+  </main>
+
+  <main id="viewShop" hidden style="display:grid;gap:20px">
+    <div class="section-head">
+      <h2>Lista de compras</h2>
+      <p>Para 1 persona, de lunes a domingo, con snacks incluidos</p>
+    </div>
+    <p class="shop-note">Compra el fin de semana: el domingo cocinas las lentejas del lunes, y del pollo al horno sale el relleno del wrap del martes. Las legumbres, el arroz y la avena alcanzan para más de una semana.</p>
+    <div class="shop-top">
+      <div class="shop-prog">
+        <div class="lbl"><span>En el carro</span><b id="shopCount"></b></div>
+        <div class="meter"><i id="shopBar" style="width:0%"></i></div>
+      </div>
+      <div class="shop-actions">
+        <button class="btn primary" id="shopCopy">Copiar lo que falta</button>
+        <button class="btn" id="shopReset">Desmarcar todo</button>
+      </div>
+    </div>
+    <textarea class="copy-box" id="copyBox" hidden readonly aria-label="Lista para copiar"></textarea>
+    <div class="shop-cols" id="shopBody"></div>
   </main>
 
   <footer class="foot">
@@ -400,6 +448,87 @@ const TIPS = [
   ["Domingo de preparación","Cocina las lentejas del lunes, guarda pollo para el wrap del martes y cuece huevos para el jueves. El miércoles en la mañana remoja los porotos."],
   ["Agua durante el turno","Apunta a 2 a 2,5 litros al día. Lleva una botella de 1 litro al trabajo y rellénala en la colación."],
   ["Fin de semana parecido","No corras tus horarios más de 1 a 2 horas el sábado y domingo, así el lunes no te cuesta despertar ni tener hambre a la hora."]
+];
+
+// Lista de compras de la semana: [producto, cantidad, para qué se usa]
+const SHOP = [
+  { cat:"Frutas", items:[
+    ["Plátanos","6","Avena, batido, panqueques y snacks"],
+    ["Manzanas","3","Snacks del lun y dom, desayuno del dom"],
+    ["Frutillas","500 g","Yogur del mié y panqueques del sáb"],
+    ["Mandarinas","3","Snack del mié, desayuno y snack del jue"],
+    ["Naranja","1","Desayuno del lun"],
+    ["Pera","1","Colación del mar"],
+    ["Limones","4","Aliños, pescados y salsa de yogur"] ]},
+  { cat:"Verduras", items:[
+    ["Papas medianas","10 (≈1,5 kg)","Charquicán, pescado, tortilla, cazuela, pollo y crema"],
+    ["Zapallo","1,3 kg","Lentejas, charquicán, porotos, cazuela y crema"],
+    ["Tomates","7","Ensaladas, tostadas y sándwich"],
+    ["Cebollas","5","Sofritos, ensalada chilena y cazuela"],
+    ["Cebolla morada","1","Pollo al horno del dom"],
+    ["Zanahorias","5","Lentejas, wrap, arroz salteado, boloñesa, ensalada y cazuela"],
+    ["Pimentones","3","Lentejas, arroz salteado, porotos, cazuela y pollo"],
+    ["Lechuga","1 grande","Wrap, tortilla y ensaladas"],
+    ["Choclos","2","Charquicán, cazuela y ensalada del sáb"],
+    ["Porotos verdes","300 g","Charquicán y cazuela"],
+    ["Brócoli","1","Pescado del mié"],
+    ["Espinaca o acelga","1 paquete","Tortilla del vie"],
+    ["Champiñones","1 bandeja (200 g)","Omelette del dom"],
+    ["Zapallo italiano","1","Pollo al horno del dom"],
+    ["Betarraga cocida","1","Merluza del vie"],
+    ["Pepino","1","Ensalada del sáb"],
+    ["Arvejas congeladas","1 bolsa chica","Arroz salteado del mié"],
+    ["Ajo","1 cabeza","Casi todas las recetas"],
+    ["Jengibre","1 trozo chico","Arroz salteado del mié"] ]},
+  { cat:"Pollo, carnes y pescados", items:[
+    ["Pechuga o tutos de pollo","700 g","Almuerzo del lun (160 g), colación del mié (120 g) y pollo al horno del dom (400 g, deja el relleno del wrap)"],
+    ["Carne molida magra 5 %","250 g","Charquicán del mar y boloñesa del jue"],
+    ["Posta negra u osobuco","300 g","Cazuela del sáb (2 platos)"],
+    ["Jurel o salmón","150 g","Almuerzo del mié"],
+    ["Merluza en filete","160 g","Almuerzo del vie"],
+    ["Atún al agua","1 lata","Ensalada del sáb"] ]},
+  { cat:"Lácteos y huevos", items:[
+    ["Huevos","21 (2 docenas)","Desayunos, charquicán, arroz, tortilla, ensaladas y snacks"],
+    ["Leche semidescremada","1,5 L","Avena, batido y vasos de leche"],
+    ["Yogur natural","4","Salsa del wrap, panqueques y snacks"],
+    ["Yogur griego natural","2","Desayuno del mié y snack del jue"],
+    ["Quesillo","1 (≈250 g)","Tostadas, sándwich y once"],
+    ["Queso fresco","1 chico (≈125 g)","Tortilla del vie y crema del dom"],
+    ["Queso gauda o mantecoso","30 g","Omelette del dom"],
+    ["Parmesano rallado","1 sobre chico","Boloñesa del jue"] ]},
+  { cat:"Panadería", items:[
+    ["Pan de molde integral","1 bolsa (≈18 rebanadas)","Tostadas, sándwich y acompañamientos"],
+    ["Marraquetas integrales chicas","2","Once del sáb y dom"],
+    ["Tortillas integrales","1 paquete (usas 2)","Wrap del mar"],
+    ["Pan pita integral","1","Snack del mié"] ]},
+  { cat:"Legumbres, granos y pastas", items:[
+    ["Lentejas","1 bolsa (usas 1½ taza)","Olla de 3 porciones; la del lun"],
+    ["Porotos blancos o hallados","1 bolsa (usas 1½ taza)","Olla de 3 porciones; la del jue"],
+    ["Garbanzos cocidos","1 tarro","Ensalada del sáb"],
+    ["Arroz integral","500 g","Lentejas, arroz salteado, merluza y cazuela"],
+    ["Quinoa","1 bolsa chica (usas ½ taza)","Almuerzo del lun"],
+    ["Avena","500 g","Avena, batido y panqueques"],
+    ["Granola sin azúcar añadida","1 bolsa chica","Desayuno del mié"],
+    ["Fideos integrales","1 paquete (usas 80 g)","Boloñesa del jue"],
+    ["Tallarines","1 paquete (usas 60 g)","Porotos con riendas del jue"] ]},
+  { cat:"Despensa", items:[
+    ["Tomate triturado","1 tarro","Boloñesa del jue"],
+    ["Mantequilla de maní sin azúcar","1 frasco","Avena, batido y snack del vie"],
+    ["Almendras","50 g","Snacks del lun y dom"],
+    ["Nueces","30 g","Snacks del jue y sáb"],
+    ["Chía o linaza","1 bolsa chica","Yogur del mié"],
+    ["Pepitas de zapallo","1 bolsa chica","Crema del dom"],
+    ["Galletas de arroz","1 paquete","Snacks del mié y vie"],
+    ["Salsa de soya baja en sodio","1 botella chica","Arroz salteado del mié"],
+    ["Aceite de oliva","1 botella, si no tienes","Casi todas las recetas"],
+    ["Miel","1 frasco, si no tienes","Avena y panqueques"],
+    ["Té de hierbas","1 caja","Snack nocturno del mié y once"] ]},
+  { cat:"Hierbas y condimentos", items:[
+    ["Cilantro","1 atado","Ensalada chilena y cazuela"],
+    ["Perejil","1 atado","Pescados y ensalada de betarraga"],
+    ["Cebollín o ciboulette","1 atado","Wrap, arroz salteado y omelette"],
+    ["Albahaca","1 atado","Boloñesa y porotos"],
+    ["Especias","Revisa la despensa","Comino, ají de color, orégano, merkén, romero, canela, pimienta y polvos de hornear"] ]}
 ];
 
 const META = { kcal:2300, p:110 };
@@ -563,14 +692,76 @@ function syncChips(){
 
 function setHash(h){ try { history.replaceState(null, "", h ? "#" + h : location.pathname + location.search); } catch(e){} }
 
+const VIEWS = { menu:["viewMenu","tabMenu",""], recetas:["viewRec","tabRec","recetario"], compras:["viewShop","tabShop","compras"] };
 function setView(v){
-  const rec = v === "recetas";
-  $("viewMenu").hidden = rec; $("viewRec").hidden = !rec;
-  $("tabMenu").setAttribute("aria-selected", String(!rec));
-  $("tabRec").setAttribute("aria-selected", String(rec));
-  if (!rec) $("backBtn").hidden = true;
+  for (const [k, [view, tab]] of Object.entries(VIEWS)) {
+    $(view).hidden = k !== v;
+    $(tab).setAttribute("aria-selected", String(k === v));
+  }
+  if (v !== "recetas") $("backBtn").hidden = true;
+  if (v === "recetas") renderRecipes();
+  if (v === "compras") renderShop();
   hideNote();
 }
+
+/* Lista de compras: lo marcado se guarda en este navegador */
+const SHOP_KEY = "planAlimentacion.compras";
+const enCarro = new Set((() => { try { return JSON.parse(localStorage.getItem(SHOP_KEY)) || []; } catch(e){ return []; } })());
+const guardarCarro = () => { try { localStorage.setItem(SHOP_KEY, JSON.stringify([...enCarro])); } catch(e){} };
+const SHOP_TOTAL = SHOP.reduce((n, c) => n + c.items.length, 0);
+
+function renderShop(){
+  $("shopBody").innerHTML = SHOP.map((c, i) => `<section class="shop-cat" data-cat="${i}">
+    <h3>${c.cat} <small></small></h3>
+    <ul class="shop-list">${c.items.map(([nm, qty, uso], j) => {
+      const id = `shop-${i}-${j}`;
+      return `<li><label><input type="checkbox" id="${id}"${enCarro.has(id) ? " checked" : ""}><span class="nm">${nm}</span><span class="qty">${qty}</span><span class="uso">${uso}</span></label></li>`;
+    }).join("")}</ul></section>`).join("");
+  updateShop();
+}
+
+function updateShop(){
+  document.querySelectorAll(".shop-cat").forEach(sec => {
+    const c = SHOP[sec.dataset.cat];
+    const n = c.items.filter((_, j) => enCarro.has(`shop-${sec.dataset.cat}-${j}`)).length;
+    sec.querySelector("h3 small").textContent = `${n}/${c.items.length}`;
+    sec.classList.toggle("done", n === c.items.length);
+  });
+  $("shopCount").textContent = `${enCarro.size} de ${SHOP_TOTAL}`;
+  $("shopBar").style.width = Math.round(enCarro.size / SHOP_TOTAL * 100) + "%";
+}
+
+function textoPendiente(){
+  const bloques = SHOP.map((c, i) => {
+    const faltan = c.items.filter((_, j) => !enCarro.has(`shop-${i}-${j}`));
+    return faltan.length ? `${c.cat}\n` + faltan.map(([nm, qty]) => `- ${nm}: ${qty}`).join("\n") : "";
+  }).filter(Boolean);
+  return bloques.length ? "Lista de compras\n\n" + bloques.join("\n\n") : "Lista de compras: ya tienes todo.";
+}
+
+$("shopBody").addEventListener("change", e => {
+  if (e.target.type !== "checkbox") return;
+  e.target.checked ? enCarro.add(e.target.id) : enCarro.delete(e.target.id);
+  guardarCarro(); updateShop();
+});
+$("shopCopy").addEventListener("click", () => {
+  const txt = textoPendiente(), btn = $("shopCopy"), box = $("copyBox");
+  const listo = () => { btn.textContent = "Lista copiada"; setTimeout(() => btn.textContent = "Copiar lo que falta", 2000); };
+  const manual = () => { box.value = txt; box.hidden = false; box.focus(); box.select(); btn.textContent = "Selecciona y copia el texto"; };
+  try { navigator.clipboard.writeText(txt).then(listo, manual); } catch(e){ manual(); }
+});
+let resetTimer = null;
+$("shopReset").addEventListener("click", () => {
+  const btn = $("shopReset");
+  if (!btn.classList.contains("warn")) {
+    btn.classList.add("warn"); btn.textContent = "¿Seguro? Toca otra vez";
+    resetTimer = setTimeout(() => { btn.classList.remove("warn"); btn.textContent = "Desmarcar todo"; }, 3000);
+    return;
+  }
+  clearTimeout(resetTimer);
+  btn.classList.remove("warn"); btn.textContent = "Desmarcar todo";
+  enCarro.clear(); guardarCarro(); renderShop();
+});
 
 function selectDay(k){
   diaSel = k;
@@ -582,7 +773,7 @@ function openRecipe(id){
   hideNote();
   volverA = { y: scrollY };
   if (!visible(m)) { filtro = "todas"; busqueda = ""; $("recSearch").value = ""; syncChips(); }
-  setView("recetas"); renderRecipes();
+  setView("recetas");
   const card = $("receta-" + id);
   card.classList.add("is-target");
   setTimeout(() => card.classList.remove("is-target"), 3500);
@@ -643,7 +834,7 @@ document.addEventListener("click", e => {
   const d = e.target.closest("[data-dia]");
   if (d) { selectDay(d.dataset.dia); return; }
   const v = e.target.closest("[data-view]");
-  if (v) { setView(v.dataset.view); if (v.dataset.view === "recetas") renderRecipes(); setHash(v.dataset.view === "recetas" ? "recetario" : ""); scrollTo(0, 0); return; }
+  if (v) { setView(v.dataset.view); setHash(VIEWS[v.dataset.view][2]); scrollTo(0, 0); return; }
   const f = e.target.closest("[data-f]");
   if (f) { filtro = f.dataset.f; syncChips(); renderRecipes(); }
 });
@@ -663,6 +854,7 @@ $("tips").innerHTML = TIPS.map(t => `<div class="tip-item"><h4>${t[0]}</h4><p>${
 const hash = (location.hash || "").slice(1);
 if (DIAS.some(d => d.k === hash)) diaSel = hash;
 renderDays(); renderDay(); renderWeek();
-if (hash === "recetario") { setView("recetas"); renderRecipes(); }
+if (hash === "recetario") setView("recetas");
+else if (hash === "compras") setView("compras");
 else if (hash.startsWith("receta-") && byId[hash.slice(7)]) openRecipe(hash.slice(7));
 </script>
