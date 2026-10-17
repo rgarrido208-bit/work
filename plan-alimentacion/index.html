@@ -11,7 +11,7 @@
   --bg:#EDF1EC; --surface:#FFFFFF; --surface-2:#F5F8F4; --ink:#16241E; --muted:#56665E; --line:#D3DCD4;
   --accent:#1E6A49; --accent-ink:#FFFFFF; --accent-soft:#DAECE1;
   --des:#B57A06; --des-soft:#FAEDCC; --alm:#2A8553; --alm-soft:#DDF0E3; --cen:#3F51AA; --cen-soft:#E2E6F7;
-  --work:#C5D2C9; --sleep:#2B3954; --micro:#D9732B; --snack:#7D8A83;
+  --work:#C5D2C9; --sleep:#2B3954; --micro:#D9732B; --snack:#7D8A83; --water:#2B7BC9;
   --note:#FFFEF7; --shadow:0 1px 2px rgb(22 36 30 / .06), 0 10px 28px rgb(22 36 30 / .10);
   --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -21,25 +21,25 @@
   --bg:#0E1512; --surface:#17211C; --surface-2:#1D2924; --ink:#E3EBE6; --muted:#9AAAA2; --line:#2A3932;
   --accent:#5BC48E; --accent-ink:#0E1512; --accent-soft:#1C392B;
   --des:#EDB542; --des-soft:#3A2F15; --alm:#5BC48E; --alm-soft:#1A3426; --cen:#8D9DF1; --cen-soft:#232A49;
-  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2;
+  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2; --water:#62A8EE;
   --note:#1E2924; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#0E1512; --surface:#17211C; --surface-2:#1D2924; --ink:#E3EBE6; --muted:#9AAAA2; --line:#2A3932;
   --accent:#5BC48E; --accent-ink:#0E1512; --accent-soft:#1C392B;
   --des:#EDB542; --des-soft:#3A2F15; --alm:#5BC48E; --alm-soft:#1A3426; --cen:#8D9DF1; --cen-soft:#232A49;
-  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2;
+  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2; --water:#62A8EE;
   --note:#1E2924; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
 }
 /* Paletas elegidas a mano: van después de los bloques de tema para ganarles */
 :root[data-palette="claro"],:root[data-palette="morado"],:root[data-palette="rosa"],:root[data-palette="azul"],:root[data-palette="rojo"],:root[data-palette="ambar"]{
   --des:#B57A06; --des-soft:#FAEDCC; --alm:#2A8553; --alm-soft:#DDF0E3; --cen:#3F51AA; --cen-soft:#E2E6F7;
-  --micro:#D9732B; --snack:#7D8A83; --accent-ink:#FFFFFF; --surface:#FFFFFF;
+  --micro:#D9732B; --snack:#7D8A83; --water:#2B7BC9; --accent-ink:#FFFFFF; --surface:#FFFFFF;
   --shadow:0 1px 2px rgb(20 20 30 / .06), 0 10px 28px rgb(20 20 30 / .10); color-scheme:light;
 }
 :root[data-palette="oscuro"],:root[data-palette="uva"],:root[data-palette="noche"]{
   --des:#EDB542; --des-soft:#3A2F15; --alm:#5BC48E; --alm-soft:#1A3426; --cen:#8D9DF1; --cen-soft:#232A49;
-  --micro:#F09A5C; --snack:#A0A8B4; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
+  --micro:#F09A5C; --snack:#A0A8B4; --water:#62A8EE; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
 }
 :root[data-palette="claro"]{ --bg:#EDF1EC; --surface-2:#F5F8F4; --ink:#16241E; --muted:#56665E; --line:#D3DCD4; --accent:#1E6A49; --accent-soft:#DAECE1; --work:#C5D2C9; --sleep:#2B3954; --note:#FFFEF7 }
 :root[data-palette="oscuro"]{ --bg:#0E1512; --surface:#17211C; --surface-2:#1D2924; --ink:#E3EBE6; --muted:#9AAAA2; --line:#2A3932; --accent:#5BC48E; --accent-ink:#0E1512; --accent-soft:#1C392B; --work:#33463C; --sleep:#9DB0DA; --note:#1E2924 }
@@ -220,6 +220,34 @@ h1 span{color:var(--accent)}
 .section-head h2{font-size:clamp(24px,3.6vw,32px);font-weight:800;letter-spacing:-.015em}
 .section-head p{color:var(--muted);font-size:14px}
 
+/* Agua del día */
+.water{display:grid;gap:14px}
+.water-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px 20px}
+.water-head h3{font-size:17px;font-weight:700}
+.water-head .fecha{font-size:13px;color:var(--muted);margin-top:2px}
+.water-total{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.water-total b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:clamp(24px,4vw,30px);font-weight:600;color:var(--water);letter-spacing:-.02em}
+.water-total span{font-size:13px;color:var(--muted)}
+.water-ok{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--water);color:var(--surface)}
+.water-body{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
+.glasses{display:flex;flex-wrap:wrap;gap:4px}
+.glass{width:32px;height:40px;padding:2px;border:0;background:transparent;border-radius:8px}
+.glass svg{width:100%;height:100%;display:block}
+@media (max-width:520px){.glasses{gap:2px}.glass{width:29px;height:37px;padding:1px}}
+.glass .g{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+.glass .w{fill:var(--water);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.glass.full .w{opacity:1;transform:none}
+.glass:hover .g{stroke:var(--water)}
+.water-actions{display:flex;flex-wrap:wrap;gap:8px}
+.water .meter i{background:var(--water);transition:width .25s}
+.water-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px}
+.water-foot p{font-size:13px;color:var(--muted);max-width:62ch}
+.wk{display:flex;gap:6px;align-items:flex-end}
+.wk div{display:grid;justify-items:center;gap:3px;font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+.wk i{display:block;position:relative;width:14px;height:34px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.wk i b{position:absolute;left:0;right:0;bottom:0;background:var(--water)}
+.wk .hoy{color:var(--ink);font-weight:600}
+
 /* Recetario */
 .rec-tools{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -330,6 +358,7 @@ h1 span{color:var(--accent)}
 
   <main id="viewMenu" style="display:grid;gap:28px">
     <nav class="days" id="days" role="tablist" aria-label="Día de la semana"></nav>
+    <section class="panel water" id="water" aria-label="Agua de hoy"></section>
     <section id="dayPanel" style="display:grid;gap:18px" aria-live="polite"></section>
     <section style="display:grid;gap:14px">
       <div class="section-head">
@@ -1076,6 +1105,65 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("palMenu").hidden) { cerrarPaletas(); $("palBtn").focus(); } });
 renderPaletas();
+
+/* Agua del día: se guarda en este navegador. El día parte a las 05:00 para que lo que tomas al salir del turno cuente para ese día. */
+const AGUA_KEY = "planAlimentacion.agua", AGUA_META = 10, VASO = 250;
+const diaAgua = (atras = 0) => { const d = new Date(Date.now() - 5 * 3600e3); d.setDate(d.getDate() - atras); return d; };
+const claveFecha = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const litros = n => (n * VASO / 1000).toLocaleString("es-CL", { maximumFractionDigits:2 });
+let agua = {};
+try { agua = JSON.parse(localStorage.getItem(AGUA_KEY)) || {}; } catch(e){}
+let aguaHoy = claveFecha(diaAgua());
+function guardarAgua(){
+  const limite = claveFecha(diaAgua(30));
+  for (const k in agua) if (k < limite) delete agua[k];
+  try { localStorage.setItem(AGUA_KEY, JSON.stringify(agua)); } catch(e){}
+}
+const VASO_SVG = '<svg viewBox="0 0 24 30" aria-hidden="true"><path class="g" d="M2.5 2h19l-2.3 25.2a2 2 0 0 1-2 1.8H6.8a2 2 0 0 1-2-1.8z"/><path class="w" d="M4.1 10h15.8l-1.5 16.7a1.2 1.2 0 0 1-1.2 1.1H6.8a1.2 1.2 0 0 1-1.2-1.1z"/></svg>';
+function renderAgua(){
+  const hoy = diaAgua(), n = agua[aguaHoy] || 0;
+  const fecha = hoy.toLocaleDateString("es-CL", { weekday:"long", day:"numeric", month:"long" });
+  const vasos = Array.from({ length:AGUA_META }, (_, i) =>
+    `<button class="glass${i < n ? " full" : ""}" data-vaso="${i + 1}" aria-pressed="${i < n}" aria-label="Vaso ${i + 1} de ${AGUA_META}">${VASO_SVG}</button>`).join("");
+  const semana = Array.from({ length:7 }, (_, i) => {
+    const d = diaAgua(6 - i), v = agua[claveFecha(d)] || 0;
+    return `<div class="${i === 6 ? "hoy" : ""}" title="${d.toLocaleDateString("es-CL", { weekday:"short", day:"numeric" })}: ${litros(v)} L"><i><b style="height:${Math.min(v, AGUA_META) / AGUA_META * 100}%"></b></i>${"DLMMJVS"[d.getDay()]}</div>`;
+  }).join("");
+  const extra = n > AGUA_META ? ` · ${n - AGUA_META} extra` : "";
+  $("water").innerHTML = `
+    <div class="water-head">
+      <div><h3>Agua de hoy</h3><p class="fecha">${fecha.charAt(0).toUpperCase() + fecha.slice(1)}</p></div>
+      <div class="water-total" aria-live="polite"><b>${litros(n)} L</b><span>de ${litros(AGUA_META)} L · ${Math.min(n, AGUA_META)} de ${AGUA_META} vasos${extra}</span>${n >= AGUA_META ? '<span class="water-ok">Meta cumplida</span>' : ""}</div>
+    </div>
+    <div class="water-body">
+      <div class="glasses" role="group" aria-label="Vasos de 250 ml">${vasos}</div>
+      <div class="water-actions">
+        <button class="btn" data-agua="-1"${n ? "" : " disabled"}>−1 vaso</button>
+        <button class="btn primary" data-agua="1">+1 vaso</button>
+        <button class="btn" data-agua="2">+ Botella 500 ml</button>
+      </div>
+    </div>
+    <div class="meter"><i style="width:${Math.min(100, n / AGUA_META * 100)}%"></i></div>
+    <div class="water-foot">
+      <p>Cada vaso es de 250 ml. Lleva una botella de 1 L al trabajo y rellénala en la colación. El contador se reinicia a las 05:00, así lo que tomas al salir del turno cuenta para ese día.</p>
+      <div class="wk" aria-label="Últimos 7 días">${semana}</div>
+    </div>`;
+}
+function sumarAgua(n){
+  agua[aguaHoy] = Math.max(0, n);
+  if (!agua[aguaHoy]) delete agua[aguaHoy];
+  guardarAgua(); renderAgua();
+}
+$("water").addEventListener("click", e => {
+  const v = e.target.closest("[data-vaso]");
+  if (v) { const i = +v.dataset.vaso, n = agua[aguaHoy] || 0; sumarAgua(i === n ? i - 1 : i); return; }
+  const a = e.target.closest("[data-agua]");
+  if (a) sumarAgua((agua[aguaHoy] || 0) + +a.dataset.agua);
+});
+const revisarDiaAgua = () => { const k = claveFecha(diaAgua()); if (k !== aguaHoy) { aguaHoy = k; renderAgua(); } };
+setInterval(revisarDiaAgua, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) revisarDiaAgua(); });
+renderAgua();
 
 /* Inicio */
 $("metaKcal").textContent = fmt(META.kcal);
