@@ -1,0 +1,671 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menú de Turno</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: una libreta de turno. Arriba eliges el día, debajo va la línea horaria del día (como un horario de micro), luego tres platos y el balance. El recetario es la segunda vista. */
+:root{
+  --bg:#EDF1EC; --surface:#FFFFFF; --surface-2:#F5F8F4; --ink:#16241E; --muted:#56665E; --line:#D3DCD4;
+  --accent:#1E6A49; --accent-ink:#FFFFFF; --accent-soft:#DAECE1;
+  --des:#B57A06; --des-soft:#FAEDCC; --alm:#2A8553; --alm-soft:#DDF0E3; --cen:#3F51AA; --cen-soft:#E2E6F7;
+  --work:#C5D2C9; --sleep:#2B3954; --micro:#D9732B; --snack:#7D8A83;
+  --note:#FFFEF7; --shadow:0 1px 2px rgb(22 36 30 / .06), 0 10px 28px rgb(22 36 30 / .10);
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1512; --surface:#17211C; --surface-2:#1D2924; --ink:#E3EBE6; --muted:#9AAAA2; --line:#2A3932;
+  --accent:#5BC48E; --accent-ink:#0E1512; --accent-soft:#1C392B;
+  --des:#EDB542; --des-soft:#3A2F15; --alm:#5BC48E; --alm-soft:#1A3426; --cen:#8D9DF1; --cen-soft:#232A49;
+  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2;
+  --note:#1E2924; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surface:#17211C; --surface-2:#1D2924; --ink:#E3EBE6; --muted:#9AAAA2; --line:#2A3932;
+  --accent:#5BC48E; --accent-ink:#0E1512; --accent-soft:#1C392B;
+  --des:#EDB542; --des-soft:#3A2F15; --alm:#5BC48E; --alm-soft:#1A3426; --cen:#8D9DF1; --cen-soft:#232A49;
+  --work:#33463C; --sleep:#9DB0DA; --micro:#F09A5C; --snack:#9AAAA2;
+  --note:#1E2924; --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 32px rgb(0 0 0 / .4); color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+.wrap,#viewMenu,#viewRec,#dayPanel,#viewMenu>section,#recBody,.rec-day{grid-template-columns:minmax(0,1fr)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px;display:grid;gap:28px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* Cabecera */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px 32px}
+.top-text{display:grid;gap:10px;min-width:0;max-width:640px}
+h1{font-size:clamp(38px,7vw,64px);font-weight:800;letter-spacing:-.025em}
+h1 span{color:var(--accent)}
+.lede{color:var(--muted);max-width:60ch}
+.profile{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.pill b{font-weight:600}
+.views{display:inline-flex;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line);gap:4px}
+.view-btn{border:0;background:transparent;padding:9px 18px;border-radius:999px;font-weight:600;color:var(--muted)}
+.view-btn[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+/* Selector de días */
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.day-btn{position:relative;display:grid;gap:2px;justify-items:start;padding:12px 12px 10px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left;transition:border-color .15s,transform .15s}
+.day-btn:hover{border-color:var(--accent)}
+.day-btn .d{font-family:var(--f-display);font-weight:700;font-size:20px;line-height:1}
+.day-btn .s{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.day-btn[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.day-btn[aria-selected="true"] .s{color:inherit;opacity:.85}
+.day-btn .hoy{position:absolute;top:8px;right:8px;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:var(--des-soft);color:var(--des)}
+.day-btn[aria-selected="true"] .hoy{background:var(--accent-ink);color:var(--accent)}
+@media (max-width:620px){
+  .days{gap:6px}
+  .day-btn{padding:10px 6px 8px;justify-items:center;text-align:center}
+  .day-btn .d{font-size:16px}
+  .day-btn .s{font-size:10px}
+  .day-btn .hoy{position:static;order:-1;font-size:9px;padding:0 5px}
+}
+
+/* Día */
+.day-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px}
+.day-head h2{font-size:clamp(28px,4.5vw,40px);font-weight:800;letter-spacing:-.02em}
+.day-head .nota{color:var(--muted);flex-basis:100%}
+.turno{font-family:var(--f-mono);font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.panel-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.panel-title h3{font-size:17px;font-weight:700}
+
+/* Línea horaria */
+.tl-scroll{overflow-x:auto;margin-inline:-4px;padding-inline:4px;padding-bottom:4px}
+.tl{position:relative;min-width:640px;height:108px}
+.tl-bar{position:absolute;left:0;right:0;top:42px;height:22px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.seg{position:absolute;top:0;bottom:0}
+.seg.sueno{background:var(--sleep);opacity:.85}
+.seg.trabajo{background:var(--work)}
+.seg.micro{background:repeating-linear-gradient(135deg,var(--micro) 0 5px,transparent 5px 9px);opacity:.9}
+.seg.colacion{background:var(--cen)}
+.ev{position:absolute;top:0;transform:translateX(-50%);display:grid;justify-items:center;gap:2px;font-size:11px;white-space:nowrap}
+.ev .t{font-family:var(--f-mono);color:var(--muted);font-size:10.5px}
+.ev .l{font-weight:600}
+.ev::after{content:"";width:2px;height:8px;background:currentColor;opacity:.5;margin-top:1px}
+.ev.low{top:66px}
+.ev.low::after{order:-1;margin:0 0 1px}
+.ev.des{color:var(--des)} .ev.alm{color:var(--alm)} .ev.cen{color:var(--cen)} .ev.mic{color:var(--micro)} .ev.snk{color:var(--snack)}
+.ev .l,.ev .t{color:var(--ink)}
+.ev .t{color:var(--muted)}
+.grid-line{position:absolute;top:0;bottom:0;width:1px;background:var(--line);z-index:1}
+.grid-line.mid{background:var(--muted);opacity:.6}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.ev.low .t{order:2}
+
+/* Platos del día */
+.meals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.meals{grid-template-columns:minmax(0,1fr)}}
+[data-kind="desayuno"]{--c:var(--des);--soft:var(--des-soft)}
+[data-kind="almuerzo"]{--c:var(--alm);--soft:var(--alm-soft)}
+[data-kind="cena"]{--c:var(--cen);--soft:var(--cen-soft)}
+.meal{display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;min-width:0}
+.meal-when{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.kind{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.hora{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.meal-hit{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;border:0;background:transparent;padding:0;text-align:left;border-radius:14px}
+.meal-hit:hover .plato{transform:rotate(-10deg) scale(1.04)}
+.meal-hit:hover .meal-name{color:var(--c)}
+.plato{position:relative;width:96px;height:96px;border-radius:50%;background:var(--surface-2);box-shadow:inset 0 0 0 8px var(--soft),inset 0 0 0 9px var(--line),0 3px 0 var(--line);transition:transform .35s cubic-bezier(.2,.8,.3,1.3);flex:none}
+.plato span{position:absolute;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.plato .e1{font-size:40px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.plato .e2{font-size:22px;right:12px;top:13px}
+.plato .e3{font-size:22px;left:12px;bottom:13px}
+.plato.sm{width:44px;height:44px;box-shadow:inset 0 0 0 4px var(--soft),inset 0 0 0 5px var(--line)}
+.plato.sm .e1{font-size:20px}
+.plato.sm .e2,.plato.sm .e3{display:none}
+.meal-name{font-family:var(--f-display);font-size:20px;font-weight:700;line-height:1.15;text-wrap:balance;transition:color .15s}
+.ctx{font-size:13px;color:var(--muted);margin-top:4px}
+.macros{display:flex;flex-wrap:wrap;gap:6px;align-content:start}
+.macro{font-family:var(--f-mono);font-size:12px;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.macro.k{background:var(--soft);border-color:transparent;color:var(--ink);font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.meal-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px dashed var(--line)}
+.link-btn{border:0;background:transparent;padding:4px 0;font-weight:600;color:var(--c,var(--accent));text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.link-btn:hover{text-decoration-thickness:2px}
+.hint{font-size:12px;color:var(--muted)}
+@media (hover:none){.hint.mouse{display:none}}
+
+/* Extras + balance */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.split{grid-template-columns:minmax(0,1fr)}}
+.extras{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.extras li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:baseline}
+.extras .t{font-family:var(--f-mono);font-size:13px;font-weight:600}
+.extras .k{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.bal{display:grid;gap:14px}
+.bal-row{display:grid;gap:6px}
+.bal-row .lbl{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.bal-row .lbl b{font-family:var(--f-mono);font-weight:600}
+.meter{height:10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:999px;background:var(--accent)}
+.stack{display:flex;height:10px;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.stack i{display:block;height:100%}
+.bal small{color:var(--muted);font-size:12px}
+
+/* Semana completa */
+.week-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.week{width:100%;min-width:860px;border-collapse:collapse;font-size:13px}
+.week th,.week td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.week thead th{font-family:var(--f-display);font-size:15px;font-weight:700;background:var(--surface-2)}
+.week thead th small{display:block;font-family:var(--f-mono);font-size:10.5px;font-weight:400;color:var(--muted)}
+.week tbody th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);width:92px}
+.week tr:last-child td,.week tr:last-child th{border-bottom:0}
+.week td.today,.week th.today{background:var(--accent-soft)}
+.cell-btn{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;border:0;background:transparent;padding:0;text-align:left;line-height:1.25;border-radius:8px}
+.cell-btn:hover span:last-child{color:var(--c);text-decoration:underline;text-underline-offset:2px}
+.cell-btn .em{font-size:20px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.week .tot td{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+/* Consejos */
+.tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px}
+@media (max-width:860px){.tips{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:560px){.tips{grid-template-columns:minmax(0,1fr)}}
+.tip-item{display:grid;gap:6px;padding-top:12px;border-top:2px solid var(--ink);min-width:0}
+.tip-item h4{font-size:16px;font-weight:700}
+.tip-item p{color:var(--muted);font-size:14px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 16px}
+.section-head h2{font-size:clamp(24px,3.6vw,32px);font-weight:800;letter-spacing:-.015em}
+.section-head p{color:var(--muted);font-size:14px}
+
+/* Recetario */
+.rec-tools{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:999px;font-weight:600;font-size:13px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.search{position:relative;flex:1 1 240px;max-width:340px}
+.search input{width:100%;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.search input::placeholder{color:var(--muted)}
+.rec-day{display:grid;gap:14px}
+.rec-day > h3{font-size:22px;font-weight:800;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rec-day > h3 small{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted)}
+.rec-list{display:grid;gap:16px}
+.recipe{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:18px 28px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;scroll-margin-top:24px;transition:box-shadow .3s,border-color .3s}
+@media (max-width:760px){.recipe{grid-template-columns:minmax(0,1fr);padding:18px}}
+.recipe.is-target{border-color:var(--c);box-shadow:0 0 0 3px var(--soft),var(--shadow)}
+.rec-head{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+.rec-head h4{font-size:clamp(20px,3vw,26px);font-weight:800;letter-spacing:-.01em}
+.rec-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rec-col h5{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--c);margin:0 0 10px}
+.ing{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.ing label{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;align-items:start;padding:5px 0;border-bottom:1px dotted var(--line);cursor:pointer}
+.ing input{margin:3px 0 0;accent-color:var(--accent)}
+.ing input:checked + span{text-decoration:line-through;color:var(--muted)}
+.steps{margin:0;padding:0;list-style:none;counter-reset:paso;display:grid;gap:10px}
+.steps li{counter-increment:paso;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px}
+.steps li::before{content:counter(paso);font-family:var(--f-mono);font-weight:600;font-size:12px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--ink)}
+.rec-tip{grid-column:1/-1;font-size:14px;padding:12px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.rec-tip b{color:var(--c)}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.back-float{position:fixed;z-index:40;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));border:0;padding:12px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;box-shadow:var(--shadow)}
+
+/* Nota flotante */
+.float-note{position:fixed;z-index:60;left:0;top:0;width:min(300px,calc(100vw - 32px));background:var(--note);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px 12px;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .14s,transform .14s}
+.float-note.show{opacity:1;transform:none}
+.float-note .fn-kind{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.float-note .fn-name{font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.2;margin:2px 0 8px}
+.float-note ul{margin:0;padding:0;list-style:none;display:grid;gap:3px;font-size:13px}
+.float-note li{display:grid;grid-template-columns:10px minmax(0,1fr);gap:6px}
+.float-note li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--c);margin-top:7px}
+.float-note .fn-foot{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
+
+.foot{font-size:13px;color:var(--muted);max-width:75ch;display:grid;gap:6px;padding-top:20px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-text">
+      <p class="eyebrow">Plan de alimentación · turno de tarde y noche</p>
+      <h1>Menú de <span>Turno</span></h1>
+      <p class="lede">Desayuno, almuerzo y cena pensados para salir a las 14:30 a tomar la micro, trabajar desde las 15:30 y cenar en la colación de las 20:00. Pasa el mouse sobre un plato para ver sus ingredientes; haz clic para abrir la receta.</p>
+      <div class="profile">
+        <span class="pill">Hombre · <b>1,71 m</b></span>
+        <span class="pill">Meta ≈ <b id="metaKcal">2.300</b> kcal/día</span>
+        <span class="pill">Proteína ≈ <b id="metaP">110</b> g/día</span>
+      </div>
+    </div>
+    <div class="views" role="tablist" aria-label="Vista">
+      <button class="view-btn" id="tabMenu" role="tab" aria-selected="true" data-view="menu">Menú semanal</button>
+      <button class="view-btn" id="tabRec" role="tab" aria-selected="false" data-view="recetas">Recetario</button>
+    </div>
+  </header>
+
+  <main id="viewMenu" style="display:grid;gap:28px">
+    <nav class="days" id="days" role="tablist" aria-label="Día de la semana"></nav>
+    <section id="dayPanel" style="display:grid;gap:18px" aria-live="polite"></section>
+    <section style="display:grid;gap:14px">
+      <div class="section-head">
+        <h2>La semana completa</h2>
+        <p>Pasa el mouse para ver ingredientes · clic para la receta</p>
+      </div>
+      <div class="week-scroll"><table class="week" id="week"></table></div>
+    </section>
+    <section style="display:grid;gap:16px">
+      <div class="section-head"><h2>Consejos para tu horario</h2></div>
+      <div class="tips" id="tips"></div>
+    </section>
+  </main>
+
+  <main id="viewRec" hidden style="display:grid;gap:22px">
+    <div class="section-head">
+      <h2>Recetario</h2>
+      <p id="recCount"></p>
+    </div>
+    <div class="rec-tools">
+      <div class="chips" id="recChips" role="group" aria-label="Filtrar por comida">
+        <button class="chip" aria-pressed="true" data-f="todas">Todas</button>
+        <button class="chip" aria-pressed="false" data-f="desayuno">Desayunos</button>
+        <button class="chip" aria-pressed="false" data-f="almuerzo">Almuerzos</button>
+        <button class="chip" aria-pressed="false" data-f="cena">Cenas</button>
+        <button class="chip" aria-pressed="false" data-f="llevar">Para llevar</button>
+      </div>
+      <label class="search"><span class="eyebrow" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Buscar receta</span><input id="recSearch" type="search" placeholder="Buscar por plato o ingrediente (ej. palta)"></label>
+    </div>
+    <div id="recBody" style="display:grid;gap:30px"></div>
+  </main>
+
+  <footer class="foot">
+    <p><b>Cómo se calculó la meta:</b> fórmula Mifflin-St Jeor para un hombre de 1,71 m, con un peso supuesto de ~70 kg, ~30 años y actividad moderada (≈2.300 kcal). Las calorías de cada plato son estimaciones por porción.</p>
+    <p>Si tu peso o tu objetivo es otro (bajar o subir), ajusta sobre todo las porciones de arroz, pan, papa, fideos y avena. Es una guía general y no reemplaza la evaluación de un nutricionista.</p>
+  </footer>
+</div>
+
+<div class="float-note" id="note" role="tooltip" aria-hidden="true"></div>
+<button class="back-float" id="backBtn" hidden>← Volver al menú</button>
+
+<script>
+// Macros por porción en gramos (p = proteína, c = carbohidratos, g = grasas). Las kcal se calculan con 4/4/9.
+const MEALS = [
+{ id:"lun-desayuno", dia:"lun", tipo:"desayuno", nombre:"Huevos revueltos con palta y tostadas", plato:["🍳","🥑","🍞"], p:27, c:48, g:27, min:10,
+  ing:["3 huevos","½ palta","2 rebanadas de pan integral (o ½ marraqueta integral)","1 naranja","1 cdta de aceite de oliva","Sal, pimienta y unas gotas de limón"],
+  pasos:["Bate los huevos con una pizca de sal.","Calienta el aceite en un sartén a fuego medio-bajo y revuelve los huevos hasta que cuajen suaves, 2 a 3 minutos.","Tuesta el pan y unta la palta molida con limón y pimienta.","Sirve con la naranja en gajos."],
+  tip:"Huevo y fruta te dejan saciado hasta el almuerzo de las 13:30." },
+{ id:"lun-almuerzo", dia:"lun", tipo:"almuerzo", nombre:"Pollo a la plancha con quinoa y ensalada chilena", plato:["🍗","🥗","🍅"], p:55, c:62, g:22, min:30,
+  ing:["160 g de pechuga de pollo","½ taza de quinoa cruda","2 tomates","½ cebolla en pluma","Cilantro picado","1 cda de aceite de oliva","Jugo de ½ limón","Ajo, merkén y sal"],
+  pasos:["Lava la quinoa y cuécela en 1 taza de agua por 15 minutos; deja reposar tapada 5 minutos.","Aliña el pollo con ajo, merkén y sal. Cocínalo a la plancha 5 a 6 minutos por lado, hasta que no quede rosado al centro.","Corta la cebolla en pluma y déjala 5 minutos en agua con sal para quitarle lo fuerte. Mézclala con el tomate, el cilantro, el aceite y el limón.","Sirve el pollo con la quinoa y la ensalada."],
+  tip:"Almuerza a las 13:30: tienes una hora antes de la micro y no viajas pesado." },
+{ id:"lun-cena", dia:"lun", tipo:"cena", nombre:"Lentejas guisadas con zapallo y arroz", plato:["🍲","🎃","🍚"], p:29, c:95, g:16, min:45, llevar:true,
+  ing:["1½ taza de lentejas cocidas (de una olla para 3 porciones)","100 g de zapallo en cubos","½ taza de arroz integral cocido","¼ de cebolla, ¼ de pimentón y ½ zanahoria","1 diente de ajo","Comino y ají de color","1 cdta de aceite"],
+  pasos:["El domingo remoja 1½ taza de lentejas secas por 2 a 4 horas (rinde 3 porciones) y escúrrelas.","Sofríe la cebolla, el ajo, el pimentón y la zanahoria picados en el aceite con comino y ají de color.","Agrega las lentejas, 300 g de zapallo y 5 tazas de agua. Cocina 30 a 35 minutos a fuego medio hasta que estén blandas.","Cuece el arroz aparte. Arma el tupper con el arroz abajo y las lentejas encima.","En la colación, calienta 2 a 3 minutos en el microondas."],
+  tip:"Lentejas con arroz forman una proteína completa. Cocina la olla el domingo y congela las 2 porciones que sobran." },
+
+{ id:"mar-desayuno", dia:"mar", tipo:"desayuno", nombre:"Avena cocida con plátano y maní", plato:["🥣","🍌","🥜"], p:21, c:80, g:16, min:10,
+  ing:["½ taza de avena (50 g)","250 ml de leche semidescremada","1 plátano","1 cda de maní sin sal o mantequilla de maní","Canela","1 cdta de miel (opcional)"],
+  pasos:["Calienta la leche con la avena en una olla, revolviendo 5 minutos hasta que espese.","Agrega canela y la mitad del plátano molido para endulzar.","Sirve con el resto del plátano en rodajas y el maní encima."],
+  tip:"La avena libera energía de a poco: llegas al almuerzo sin bajón." },
+{ id:"mar-almuerzo", dia:"mar", tipo:"almuerzo", nombre:"Charquicán con huevo", plato:["🥔","🍳","🌽"], p:40, c:66, g:20, min:40,
+  ing:["120 g de carne molida magra (5 % grasa)","2 papas medianas","150 g de zapallo","½ taza de choclo","½ taza de porotos verdes","½ cebolla y 1 diente de ajo","Comino, orégano y ají de color","1 huevo","1 cdta de aceite"],
+  pasos:["Pela y corta en cubos las papas y el zapallo. Cuécelos en poca agua por 15 minutos.","Sofríe la cebolla y el ajo, agrega la carne y dórala con comino, orégano y ají de color.","Suma el choclo y los porotos verdes y cocina 5 minutos más.","Mezcla con la papa y el zapallo y machaca dejando algunos trozos.","Corona con un huevo a la plancha o pochado."],
+  tip:"Haz doble cantidad y congela una porción para una semana en que no alcances a cocinar." },
+{ id:"mar-cena", dia:"mar", tipo:"cena", nombre:"Wrap integral de pollo y palta", plato:["🌯","🥑","🍐"], p:48, c:70, g:19, min:15, llevar:true,
+  ing:["2 tortillas integrales","130 g de pollo cocido desmenuzado (del domingo)","¼ de palta","Lechuga, tomate y zanahoria rallada","2 cdas de yogur natural","Limón, ajo y ciboulette","1 pera"],
+  pasos:["Mezcla el yogur con limón, ajo rallado y ciboulette para hacer la salsa.","Unta las tortillas con la salsa y agrega el pollo, la palta, la lechuga, el tomate y la zanahoria.","Enrolla apretado y envuelve en papel aluminio o film.","Si quieres que no se humedezca, lleva la salsa aparte en un pote chico."],
+  tip:"No necesita microondas: sirve cuando la fila para calentar es larga." },
+
+{ id:"mie-desayuno", dia:"mie", tipo:"desayuno", nombre:"Yogur griego con granola y frutillas", plato:["🍓","🥛","🍞"], p:30, c:62, g:16, min:5,
+  ing:["1 yogur griego natural (170 g)","40 g de granola sin azúcar añadida","1 taza de frutillas","1 cda de semillas de chía o linaza","1 tostada integral con 1 lámina de quesillo"],
+  pasos:["Lava y corta las frutillas.","Pon el yogur en un bowl y agrega encima la granola, las frutillas y la chía.","Acompaña con la tostada con quesillo."],
+  tip:"Si no hay frutillas, usa plátano, manzana o fruta de la estación." },
+{ id:"mie-almuerzo", dia:"mie", tipo:"almuerzo", nombre:"Jurel o salmón al horno con papas y brócoli", plato:["🐟","🥔","🥦"], p:38, c:64, g:22, min:35,
+  ing:["150 g de filete de jurel o salmón","2 papas medianas","1 taza de brócoli","1 cdta de aceite de oliva","Limón, ajo y eneldo o perejil","Sal y pimienta"],
+  pasos:["Cuece las papas con cáscara 15 a 20 minutos (u 8 minutos en el microondas, pinchadas y tapadas).","Pon el pescado en una fuente con ajo, limón, eneldo y el aceite. Hornea a 200 °C por 12 a 15 minutos.","Cuece el brócoli al vapor 4 minutos, hasta que quede verde intenso.","Sirve todo con un chorrito de limón."],
+  tip:"El pescado graso, 1 a 2 veces por semana, aporta omega-3." },
+{ id:"mie-cena", dia:"mie", tipo:"cena", nombre:"Arroz salteado con pollo y verduras", plato:["🍚","🍗","🥕"], p:46, c:85, g:15, min:25, llevar:true,
+  ing:["1½ taza de arroz cocido frío (del día anterior)","120 g de pollo en cubos","1 huevo","½ pimentón y ½ zanahoria","½ taza de arvejas","Cebollín","1 cda de salsa de soya baja en sodio","1 cdta de aceite","Ajo y jengibre rallado"],
+  pasos:["Saltea el pollo en el aceite bien caliente por 5 minutos y resérvalo.","En el mismo sartén saltea la zanahoria, el pimentón, las arvejas, el ajo y el jengibre por 3 minutos.","Agrega el arroz frío y el pollo y revuelve a fuego alto.","Abre un hueco, revuelve ahí el huevo y luego mezcla todo.","Termina con la soya y el cebollín y guarda en el tupper."],
+  tip:"El arroz frío del refrigerador se saltea mejor y no se apelmaza." },
+
+{ id:"jue-desayuno", dia:"jue", tipo:"desayuno", nombre:"Tostadas con quesillo, tomate y huevo duro", plato:["🍞","🥚","🍅"], p:32, c:46, g:20, min:10,
+  ing:["2 rebanadas de pan integral","2 láminas de quesillo (60 g)","1 tomate","2 huevos duros","Orégano y 1 cdta de aceite de oliva","1 kiwi o 1 mandarina"],
+  pasos:["Cuece los huevos 10 minutos (puedes dejarlos listos el domingo).","Tuesta el pan y pon encima el quesillo y el tomate en rodajas con orégano y un hilo de aceite.","Sirve con los huevos y la fruta."],
+  tip:"El kiwi o la mandarina suman vitamina C para empezar el día." },
+{ id:"jue-almuerzo", dia:"jue", tipo:"almuerzo", nombre:"Fideos integrales a la boloñesa", plato:["🍝","🍅","🥗"], p:42, c:78, g:18, min:30,
+  ing:["80 g de fideos integrales crudos","120 g de carne molida magra","1 taza de tomate natural rallado o en lata sin azúcar","½ cebolla, ½ zanahoria rallada y 1 diente de ajo","Orégano y albahaca","1 cdta de aceite","1 cda de queso parmesano rallado","Ensalada verde para acompañar"],
+  pasos:["Sofríe la cebolla, el ajo y la zanahoria en el aceite.","Agrega la carne y dórala.","Suma el tomate y las hierbas y cocina tapado 15 minutos.","Cuece los fideos al dente según el envase.","Sirve la salsa sobre los fideos con el parmesano y la ensalada al lado."],
+  tip:"La zanahoria rallada endulza la salsa sin agregar azúcar." },
+{ id:"jue-cena", dia:"jue", tipo:"cena", nombre:"Porotos con riendas y zapallo", plato:["🍲","🎃","🌿"], p:28, c:100, g:14, min:60, llevar:true,
+  ing:["1 taza de porotos cocidos (de una olla para 3 porciones)","100 g de zapallo","¼ de cebolla y ¼ de pimentón","1 diente de ajo","Ají de color y orégano","60 g de tallarines (riendas)","1 cdta de aceite","Albahaca picada"],
+  pasos:["El miércoles en la mañana remoja 1½ taza de porotos blancos o hallados (rinde 3 porciones). Cámbiales el agua antes de cocinar.","Cuécelos en olla a presión 25 minutos, o 1 hora 15 minutos en olla normal.","Sofríe la cebolla, el ajo y el pimentón con ají de color. Agrégalos a la olla con 300 g de zapallo y cocina 15 minutos, hasta que el zapallo se deshaga y espese.","Suma los tallarines quebrados y cocina 10 minutos más. Termina con albahaca.","Guarda en el tupper y calienta 3 minutos en la colación."],
+  tip:"Acompaña con pebre o tomate: la vitamina C ayuda a absorber el hierro de los porotos." },
+
+{ id:"vie-desayuno", dia:"vie", tipo:"desayuno", nombre:"Batido de plátano, avena y maní", plato:["🥤","🍌","🥜"], p:27, c:90, g:22, min:5,
+  ing:["300 ml de leche semidescremada","1 plátano (congelado queda más cremoso)","3 cdas de avena","1 cda de mantequilla de maní","Canela","1 tostada integral con palta"],
+  pasos:["Pon todo en la licuadora y licúa hasta que quede suave.","Acompaña con la tostada con palta."],
+  tip:"Si despiertas con poco apetito, un batido entra fácil." },
+{ id:"vie-almuerzo", dia:"vie", tipo:"almuerzo", nombre:"Merluza a la plancha con arroz y ensalada de betarraga", plato:["🐟","🍚","🥗"], p:40, c:84, g:17, min:30,
+  ing:["160 g de filete de merluza","1½ taza de arroz integral cocido","1 betarraga cocida","1 zanahoria rallada","1 cda de aceite de oliva","Limón, ajo y perejil","Sal"],
+  pasos:["Seca la merluza con papel y alíñala con ajo, limón y sal.","Cocínala en un sartén con unas gotas de aceite, 3 a 4 minutos por lado.","Corta la betarraga en cubos y mézclala con la zanahoria, el perejil, limón y el resto del aceite.","Sirve con el arroz."],
+  tip:"La betarraga ya cocida de la feria o el súper te ahorra 40 minutos." },
+{ id:"vie-cena", dia:"vie", tipo:"cena", nombre:"Tortilla de espinaca y papa con ensalada", plato:["🥚","🥬","🥔"], p:35, c:58, g:24, min:30, llevar:true,
+  ing:["3 huevos y 1 clara","1 papa mediana cocida en cubos","1 taza de espinaca o acelga","½ cebolla","30 g de queso fresco","1 cdta de aceite","2 rebanadas de pan integral","Lechuga y tomate"],
+  pasos:["Sofríe la cebolla en el aceite y agrega la espinaca hasta que se marchite.","Bate los huevos con sal y mézclalos con la papa, la espinaca y el queso desmenuzado.","Vierte en un sartén chico antiadherente y cocina tapado a fuego bajo 8 minutos.","Da vuelta la tortilla con ayuda de un plato y cocina 3 minutos más.","Córtala en triángulos y llévala con la ensalada y el pan."],
+  tip:"Se come fría o tibia, así no dependes del microondas." },
+
+{ id:"sab-desayuno", dia:"sab", tipo:"desayuno", nombre:"Panqueques de avena y plátano con yogur", plato:["🥞","🍌","🍯"], p:25, c:78, g:15, min:20,
+  ing:["1 plátano maduro","2 huevos","½ taza de avena","1 pizca de polvos de hornear y canela","1 yogur natural","1 cdta de miel","Frutillas o arándanos"],
+  pasos:["Muele el plátano y mézclalo con los huevos, la avena, los polvos de hornear y la canela (o licúa todo).","Cocina cucharadas de mezcla en un sartén antiadherente, 2 minutos por lado.","Sirve con el yogur, la fruta y un hilo de miel."],
+  tip:"Es un desayuno de fin de semana sin apuro, sin harina ni azúcar agregada." },
+{ id:"sab-almuerzo", dia:"sab", tipo:"almuerzo", nombre:"Cazuela de vacuno", plato:["🍲","🌽","🥔"], p:44, c:75, g:16, min:75,
+  ing:["150 g de posta negra u osobuco sin grasa (receta para 2: 300 g)","1 papa","1 trozo de zapallo","½ choclo en trozos","½ taza de porotos verdes","¼ de pimentón, ½ zanahoria y ½ cebolla","1 cda de arroz","1 rebanada de pan integral para acompañar","Orégano, cilantro y sal"],
+  pasos:["Pon la carne en 2 litros de agua con la cebolla, la zanahoria y el pimentón. Cocina 50 minutos (25 en olla a presión) retirando la espuma.","Agrega las papas, el zapallo y el choclo y cocina 15 minutos.","Suma los porotos verdes y el arroz y cocina 10 minutos más.","Sirve con cilantro picado y el pan al lado."],
+  tip:"La receta rinde 2 platos: guarda el segundo para un almuerzo de la semana." },
+{ id:"sab-cena", dia:"sab", tipo:"cena", nombre:"Ensalada de atún, garbanzos y huevo", plato:["🥗","🐟","🥚"], p:47, c:58, g:22, min:15,
+  ing:["1 lata de atún al agua, escurrido","¾ taza de garbanzos cocidos","1 huevo duro","Lechuga, tomate, pepino y choclo","¼ de palta","1 cdta de aceite de oliva, limón y sal","2 rebanadas de pan integral"],
+  pasos:["Lava y corta las verduras.","Enjuaga los garbanzos si son de tarro.","Mezcla todo en un bowl grande con el atún, el huevo en cuartos y la palta.","Aliña con aceite, limón y sal. Acompaña con el pan."],
+  tip:"Cena liviana y con mucha proteína para el sábado en la noche." },
+
+{ id:"dom-desayuno", dia:"dom", tipo:"desayuno", nombre:"Omelette de champiñones y queso", plato:["🍳","🍄","🧀"], p:32, c:42, g:26, min:15,
+  ing:["3 huevos","1 taza de champiñones laminados","30 g de queso gauda o mantecoso","Ciboulette","1 cdta de aceite","2 rebanadas de pan integral","1 manzana o 1 taza de melón"],
+  pasos:["Saltea los champiñones 4 minutos y resérvalos.","Bate los huevos con sal y ciboulette y viértelos en el sartén caliente.","Cuando cuaje la base, agrega los champiñones y el queso, dobla y cocina 1 minuto más.","Sirve con el pan tostado y la fruta."],
+  tip:"Domingo es día de preparar la semana: empieza con un desayuno que te sostenga." },
+{ id:"dom-almuerzo", dia:"dom", tipo:"almuerzo", nombre:"Pollo al horno con verduras asadas", plato:["🍗","🥕","🥔"], p:50, c:70, g:24, min:60,
+  ing:["200 g de pollo (tuto sin piel o pechuga); receta para 2: 400 g","2 papas en gajos","½ zapallo italiano","½ pimentón","½ cebolla morada","1 cdta de aceite de oliva","Ajo, romero, merkén y sal"],
+  pasos:["Precalienta el horno a 200 °C.","Aliña el pollo con ajo, romero, merkén y sal.","Corta las verduras en trozos grandes y mézclalas con el aceite en la fuente.","Pon el pollo encima y hornea 40 a 45 minutos, dando vuelta las verduras a la mitad.","Desmenuza 130 g del pollo que sobra y guárdalo para el wrap del martes."],
+  tip:"Mientras el horno trabaja, cocina las lentejas del lunes y cuece huevos para el jueves." },
+{ id:"dom-cena", dia:"dom", tipo:"cena", nombre:"Crema de zapallo con tostadas y queso fresco", plato:["🥣","🎃","🧀"], p:32, c:60, g:21, min:30,
+  ing:["300 g de zapallo","1 papa chica","½ cebolla y 1 diente de ajo","2 tazas de caldo de verduras casero o agua","1 cda de semillas de zapallo (pepitas)","2 rebanadas de pan integral","60 g de queso fresco","1 huevo pochado"],
+  pasos:["Sofríe la cebolla y el ajo.","Agrega el zapallo y la papa en cubos con el caldo y cocina 20 minutos.","Licúa hasta que quede cremosa y ajusta la sal.","Sirve con las pepitas tostadas, el huevo pochado encima y las tostadas con queso fresco."],
+  tip:"Una cena tibia y liviana ayuda a dormir antes de una semana de turnos." }
+];
+
+// Snacks entre comidas para llegar a la meta del día
+const EXTRAS = {
+  lun:[["17:30","1 manzana, 20 g de almendras y 1 huevo duro",300,11],["23:30","1 yogur natural o 1 vaso de leche",120,8]],
+  mar:[["17:30","Sándwich chico integral con quesillo y tomate",240,14],["23:30","1 plátano y 1 vaso de leche",200,9]],
+  mie:[["17:30","2 huevos duros, 1 mandarina y 1 pan pita integral",330,17],["22:30","Té de hierbas y 2 galletas de arroz con quesillo",140,6]],
+  jue:[["17:30","1 yogur griego con 1 cda de nueces y 1 plátano",300,17],["22:30","1 fruta y 1 vaso de leche",190,9]],
+  vie:[["17:30","2 galletas de arroz con mantequilla de maní y 1 plátano",310,7],["22:30","1 vaso de leche",110,8]],
+  sab:[["16:30","1 yogur natural con 1 cda de nueces",200,10],["18:00","Once: té y 1 marraqueta integral chica con palta y tomate",320,8]],
+  dom:[["16:30","1 manzana y 20 g de almendras",230,5],["18:00","Once: té y ½ marraqueta integral con quesillo",250,12]]
+};
+
+const TIPS = [
+  ["Tupper con frío","Entre las 14:30 y las 20:00 pasan más de 5 horas. Lleva la colación en bolsa térmica con una unidad refrigerante y déjala en un refrigerador si tu trabajo tiene uno."],
+  ["Cafeína hasta las 18:00","Te acuestas entre 01:30 y 02:30. La cafeína dura 5 a 6 horas en el cuerpo, así que el último café o té negro va a media tarde."],
+  ["Al salir, algo chico","Después de las 00:00 o 01:00 evita comidas grandes. Si llegas con hambre, un yogur, leche o una fruta bastan para dormir bien."],
+  ["Domingo de preparación","Cocina las lentejas del lunes, guarda pollo para el wrap del martes y cuece huevos para el jueves. El miércoles en la mañana remoja los porotos."],
+  ["Agua durante el turno","Apunta a 2 a 2,5 litros al día. Lleva una botella de 1 litro al trabajo y rellénala en la colación."],
+  ["Fin de semana parecido","No corras tus horarios más de 1 a 2 horas el sábado y domingo, así el lunes no te cuesta despertar ni tener hambre a la hora."]
+];
+
+const META = { kcal:2300, p:110 };
+const DIAS = [
+  {k:"lun", n:"Lunes", c:"Lun", t:"largo"}, {k:"mar", n:"Martes", c:"Mar", t:"largo"},
+  {k:"mie", n:"Miércoles", c:"Mié", t:"corto"}, {k:"jue", n:"Jueves", c:"Jue", t:"corto"}, {k:"vie", n:"Viernes", c:"Vie", t:"corto"},
+  {k:"sab", n:"Sábado", c:"Sáb", t:"casa"}, {k:"dom", n:"Domingo", c:"Dom", t:"casa"}
+];
+const CTX_TRABAJO = { desayuno:"Al despertar", almuerzo:"Antes de tomar la micro", cena:"En la colación del trabajo" };
+const TURNOS = {
+  largo:{ chip:"Turno 15:30 – 01:00", sub:"hasta 01:00", nota:"Sales a las 14:30 a la micro · colación de 20:00 a 21:00 · terminas a la 01:00.",
+    horas:{desayuno:"10:30", almuerzo:"13:30", cena:"20:00"}, ctx:CTX_TRABAJO,
+    seg:[["sueno",8,10],["micro",14.5,15.5],["trabajo",15.5,25],["colacion",20,21],["micro",25,25.75],["sueno",26.5,27]],
+    ev:[[10.5,"Desayuno","des"],[13.5,"Almuerzo","alm"],[14.5,"Micro","mic"],[17.5,"Snack","snk"],[20,"Colación","cen"],[23.5,"Snack","snk"],[25,"Salida","mic"]] },
+  corto:{ chip:"Turno 15:30 – 00:00", sub:"hasta 00:00", nota:"Sales a las 14:30 a la micro · colación de 20:00 a 21:00 · terminas a las 00:00.",
+    horas:{desayuno:"10:00", almuerzo:"13:30", cena:"20:00"}, ctx:CTX_TRABAJO,
+    seg:[["sueno",8,9.5],["micro",14.5,15.5],["trabajo",15.5,24],["colacion",20,21],["micro",24,24.75],["sueno",25.5,27]],
+    ev:[[10,"Desayuno","des"],[13.5,"Almuerzo","alm"],[14.5,"Micro","mic"],[17.5,"Snack","snk"],[20,"Colación","cen"],[22.5,"Snack","snk"],[24,"Salida","mic"]] },
+  casa:{ chip:"En casa", sub:"en casa", nota:"Día en casa. Mantén horarios parecidos a los de la semana (±1 h) para que el lunes no cueste.",
+    horas:{desayuno:"10:30", almuerzo:"14:00", cena:"20:30"}, ctx:{desayuno:"Sin apuro, en casa", almuerzo:"En casa", cena:"En casa, liviana"},
+    seg:[["sueno",8,10],["sueno",25.5,27]],
+    ev:[[10.5,"Desayuno","des"],[14,"Almuerzo","alm"],[18,"Once","snk"],[20.5,"Cena","cen"]] }
+};
+const TIPOS = ["desayuno","almuerzo","cena"];
+const TIPO_N = { desayuno:"Desayuno", almuerzo:"Almuerzo", cena:"Cena" };
+
+const byId = Object.fromEntries(MEALS.map(m => [m.id, m]));
+const diaDe = k => DIAS.find(d => d.k === k);
+const kcal = m => Math.round((4*m.p + 4*m.c + 9*m.g) / 10) * 10;
+const fmt = n => n.toLocaleString("es-CL");
+const fmtH = h => String(Math.floor(h) % 24).padStart(2,"0") + ":" + String(Math.round((h % 1) * 60)).padStart(2,"0");
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+
+const hoyIdx = (new Date().getDay() + 6) % 7;
+let diaSel = DIAS[hoyIdx].k;
+let filtro = "todas", busqueda = "", volverA = null;
+const marcados = new Set();
+
+const labelTipo = m => (m.tipo === "cena" && diaDe(m.dia).t !== "casa") ? "Cena · colación" : TIPO_N[m.tipo];
+const plato = m => `<span class="plato" aria-hidden="true"><span class="e1">${m.plato[0]}</span><span class="e2">${m.plato[1]}</span><span class="e3">${m.plato[2]}</span></span>`;
+const macros = m => `<span class="macro k">${fmt(kcal(m))} kcal</span><span class="macro">P ${m.p} g</span><span class="macro">C ${m.c} g</span><span class="macro">G ${m.g} g</span>`;
+
+function totalDia(k){
+  const t = { k:0, p:0, c:0, g:0 };
+  TIPOS.forEach(tp => { const m = byId[k + "-" + tp]; t.k += kcal(m); t.p += m.p; t.c += m.c; t.g += m.g; });
+  (EXTRAS[k] || []).forEach(e => { t.k += e[2]; t.p += e[3]; });
+  return t;
+}
+
+function renderDays(){
+  $("days").innerHTML = DIAS.map((d, i) =>
+    `<button class="day-btn" role="tab" aria-selected="${d.k === diaSel}" data-dia="${d.k}">${i === hoyIdx ? '<span class="hoy">hoy</span>' : ""}<span class="d">${d.c}</span><span class="s">${TURNOS[d.t].sub}</span></button>`
+  ).join("");
+}
+
+function timeline(t){
+  const A = 8, B = 27, pos = h => ((h - A) / (B - A) * 100).toFixed(2) + "%";
+  const segs = t.seg.map(([k,a,b]) => `<span class="seg ${k}" style="left:${pos(a)};width:${((b - a) / (B - A) * 100).toFixed(2)}%"></span>`).join("");
+  let grid = "";
+  for (let h = 10; h <= 26; h += 2) grid += `<span class="grid-line${h === 24 ? " mid" : ""}" style="left:${pos(h)}"></span>`;
+  const evs = t.ev.map(([h,l,k], i) => `<span class="ev ${k}${i % 2 ? " low" : ""}" style="left:${pos(h)}"><span class="t">${fmtH(h)}</span><span class="l">${l}</span></span>`).join("");
+  return `<div class="tl-scroll"><div class="tl"><div class="tl-bar">${segs}${grid}</div>${evs}</div></div>
+    <div class="legend"><span><i style="background:var(--sleep)"></i>Sueño</span><span><i style="background:var(--work)"></i>Trabajo</span><span><i style="background:repeating-linear-gradient(135deg,var(--micro) 0 3px,transparent 3px 6px)"></i>Viaje en micro</span><span><i style="background:var(--cen)"></i>Colación</span><span>Líneas cada 2 h · la más marcada es medianoche</span></div>`;
+}
+
+function mealCard(m, t){
+  return `<article class="meal" data-kind="${m.tipo}">
+    <div class="meal-when"><span class="kind">${labelTipo(m)}</span><span class="hora">${t.horas[m.tipo]}</span></div>
+    <button class="meal-hit" data-meal="${m.id}" data-recipe="${m.id}">
+      ${plato(m)}
+      <span style="min-width:0"><span class="meal-name" style="display:block">${m.nombre}</span><span class="ctx" style="display:block">${t.ctx[m.tipo]}</span></span>
+    </button>
+    <div style="display:grid;gap:8px;align-content:start">
+      <div class="macros">${macros(m)}</div>
+      <div class="badges"><span class="badge">Preparación: ${m.min} min</span>${m.llevar ? '<span class="badge">Para llevar en tupper</span>' : ""}</div>
+    </div>
+    <div class="meal-foot"><span class="hint mouse">Mouse encima: ingredientes</span><button class="link-btn" data-recipe="${m.id}">Ver receta →</button></div>
+  </article>`;
+}
+
+function renderDay(){
+  const d = diaDe(diaSel), t = TURNOS[d.t];
+  const meals = TIPOS.map(tp => byId[d.k + "-" + tp]);
+  const tot = totalDia(d.k);
+  const mk = meals.reduce((a, m) => ({ p:a.p + m.p*4, c:a.c + m.c*4, g:a.g + m.g*9 }), { p:0, c:0, g:0 });
+  const mkT = mk.p + mk.c + mk.g, sh = v => Math.round(v / mkT * 100);
+  const pctK = Math.round(tot.k / META.kcal * 100), pctP = Math.round(tot.p / META.p * 100);
+  const ex = EXTRAS[d.k] || [];
+  $("dayPanel").innerHTML = `
+    <div class="day-head"><h2>${d.n}</h2><span class="turno">${t.chip}</span><p class="nota">${t.nota}</p></div>
+    <div class="panel"><div class="panel-title"><h3>Tu día, hora a hora</h3><span class="eyebrow">08:00 → 03:00</span></div>${timeline(t)}</div>
+    <div class="meals">${meals.map(m => mealCard(m, t)).join("")}</div>
+    <div class="split">
+      <div class="panel"><div class="panel-title"><h3>Entre comidas</h3><span class="eyebrow">snacks</span></div>
+        <ul class="extras">${ex.map(e => `<li><span class="t">${e[0]}</span><span>${e[1]}</span><span class="k">${e[2]} kcal</span></li>`).join("")}</ul>
+      </div>
+      <div class="panel"><div class="panel-title"><h3>Balance del día</h3><span class="eyebrow">${pctK} % de la meta</span></div>
+        <div class="bal">
+          <div class="bal-row"><div class="lbl"><span>Energía</span><b>${fmt(tot.k)} / ${fmt(META.kcal)} kcal</b></div><div class="meter"><i style="width:${Math.min(100, pctK)}%"></i></div></div>
+          <div class="bal-row"><div class="lbl"><span>Proteína</span><b>${tot.p} / ${META.p} g</b></div><div class="meter"><i style="width:${Math.min(100, pctP)}%;background:var(--alm)"></i></div></div>
+          <div class="bal-row"><div class="lbl"><span>Reparto de las 3 comidas</span><b>P ${sh(mk.p)} · C ${sh(mk.c)} · G ${sh(mk.g)} %</b></div>
+            <div class="stack"><i style="width:${sh(mk.p)}%;background:var(--alm)"></i><i style="width:${sh(mk.c)}%;background:var(--des)"></i><i style="width:${sh(mk.g)}%;background:var(--cen)"></i></div>
+            <small>Proteína · Carbohidratos · Grasas, como % de las calorías</small></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderWeek(){
+  const td = i => i === hoyIdx ? ' class="today"' : "";
+  const head = `<thead><tr><th></th>${DIAS.map((d, i) => `<th${td(i)}>${d.n}<small>${TURNOS[d.t].chip}</small></th>`).join("")}</tr></thead>`;
+  const rows = TIPOS.map(tp => `<tr data-kind="${tp}"><th scope="row">${tp === "cena" ? "Cena / colación" : TIPO_N[tp]}</th>${DIAS.map((d, i) => {
+    const m = byId[d.k + "-" + tp];
+    return `<td${td(i)}><button class="cell-btn" data-meal="${m.id}" data-recipe="${m.id}"><span class="em" aria-hidden="true">${m.plato[0]}</span><span>${m.nombre}</span></button></td>`;
+  }).join("")}</tr>`).join("");
+  const tot = `<tr class="tot"><th scope="row" style="color:var(--muted)">Total día</th>${DIAS.map((d, i) => `<td${td(i)}>${fmt(totalDia(d.k).k)} kcal</td>`).join("")}</tr>`;
+  $("week").innerHTML = head + `<tbody>${rows}${tot}</tbody>`;
+}
+
+function visible(m){
+  if (filtro === "llevar" && !m.llevar) return false;
+  if (TIPOS.includes(filtro) && m.tipo !== filtro) return false;
+  if (busqueda) return norm(m.nombre + " " + m.ing.join(" ")).includes(norm(busqueda));
+  return true;
+}
+
+function recipeCard(m){
+  const d = diaDe(m.dia), t = TURNOS[d.t];
+  return `<article class="recipe" id="receta-${m.id}" data-kind="${m.tipo}">
+    <div class="rec-head">${plato(m)}<div style="min-width:0">
+      <div class="kind">${labelTipo(m)} · ${d.n} ${t.horas[m.tipo]}</div>
+      <h4>${m.nombre}</h4>
+      <div class="rec-meta">${macros(m)}<span class="macro">${m.min} min</span>${m.llevar ? '<span class="badge">Para llevar</span>' : ""}</div>
+    </div></div>
+    <div class="rec-col"><h5>Ingredientes · 1 porción</h5><ul class="ing">${m.ing.map((x, i) => {
+      const id = `chk-${m.id}-${i}`;
+      return `<li><label><input type="checkbox" id="${id}"${marcados.has(id) ? " checked" : ""}><span>${x}</span></label></li>`;
+    }).join("")}</ul></div>
+    <div class="rec-col"><h5>Preparación</h5><ol class="steps">${m.pasos.map(p => `<li><span>${p}</span></li>`).join("")}</ol></div>
+    <p class="rec-tip"><b>Consejo:</b> ${m.tip}</p>
+  </article>`;
+}
+
+function renderRecipes(){
+  let n = 0;
+  const html = DIAS.map(d => {
+    const list = TIPOS.map(tp => byId[d.k + "-" + tp]).filter(visible);
+    n += list.length;
+    if (!list.length) return "";
+    return `<section class="rec-day"><h3>${d.n} <small>${TURNOS[d.t].chip}</small></h3><div class="rec-list">${list.map(recipeCard).join("")}</div></section>`;
+  }).join("");
+  $("recBody").innerHTML = html || `<p class="empty">No hay recetas con “${busqueda}”. Prueba con otro ingrediente o elige “Todas”.</p>`;
+  $("recCount").textContent = n === MEALS.length ? `${MEALS.length} recetas, una por comida` : `${n} de ${MEALS.length} recetas`;
+}
+
+function syncChips(){
+  document.querySelectorAll("#recChips .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.f === filtro)));
+}
+
+function setHash(h){ try { history.replaceState(null, "", h ? "#" + h : location.pathname + location.search); } catch(e){} }
+
+function setView(v){
+  const rec = v === "recetas";
+  $("viewMenu").hidden = rec; $("viewRec").hidden = !rec;
+  $("tabMenu").setAttribute("aria-selected", String(!rec));
+  $("tabRec").setAttribute("aria-selected", String(rec));
+  if (!rec) $("backBtn").hidden = true;
+  hideNote();
+}
+
+function selectDay(k){
+  diaSel = k;
+  renderDays(); renderDay();
+}
+
+function openRecipe(id){
+  const m = byId[id]; if (!m) return;
+  hideNote();
+  volverA = { y: scrollY };
+  if (!visible(m)) { filtro = "todas"; busqueda = ""; $("recSearch").value = ""; syncChips(); }
+  setView("recetas"); renderRecipes();
+  const card = $("receta-" + id);
+  card.classList.add("is-target");
+  setTimeout(() => card.classList.remove("is-target"), 3500);
+  requestAnimationFrame(() => card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
+  $("backBtn").textContent = `← Volver al menú del ${diaDe(diaSel).n.toLowerCase()}`;
+  $("backBtn").hidden = false;
+  setHash("receta-" + id);
+}
+
+/* Nota flotante con ingredientes */
+const note = $("note");
+let noteFor = null;
+function placeNote(x, y){
+  const r = note.getBoundingClientRect(), pad = 12, gap = 18;
+  let left = x + gap, top = y + gap;
+  if (left + r.width > innerWidth - pad) left = x - r.width - gap;
+  if (left < pad) left = pad;
+  if (top + r.height > innerHeight - pad) top = Math.max(pad, y - r.height - gap);
+  note.style.left = left + "px"; note.style.top = top + "px";
+}
+function showNote(el, x, y){
+  const m = byId[el.dataset.meal]; if (!m) return;
+  if (noteFor !== el) {
+    note.dataset.kind = m.tipo;
+    note.innerHTML = `<div class="fn-kind">${labelTipo(m)} · ${diaDe(m.dia).n}</div><div class="fn-name">${m.nombre}</div><ul>${m.ing.map(i => `<li>${i}</li>`).join("")}</ul><div class="fn-foot">${fmt(kcal(m))} kcal · clic para ver la receta</div>`;
+    noteFor = el;
+  }
+  if (x == null) { const b = el.getBoundingClientRect(); x = b.left; y = b.bottom - 10; }
+  placeNote(x, y);
+  note.classList.add("show"); note.setAttribute("aria-hidden", "false");
+}
+function hideNote(){ note.classList.remove("show"); note.setAttribute("aria-hidden", "true"); noteFor = null; }
+
+document.addEventListener("pointerover", e => {
+  if (e.pointerType !== "mouse") return;
+  const el = e.target.closest("[data-meal]");
+  if (el) showNote(el, e.clientX, e.clientY);
+});
+document.addEventListener("pointermove", e => {
+  if (e.pointerType === "mouse" && noteFor && noteFor.contains(e.target)) placeNote(e.clientX, e.clientY);
+});
+document.addEventListener("pointerout", e => {
+  const el = e.target.closest("[data-meal]");
+  if (el && !el.contains(e.relatedTarget)) hideNote();
+});
+document.addEventListener("focusin", e => {
+  const el = e.target.closest("[data-meal]");
+  if (el && el.matches(":focus-visible")) showNote(el);
+});
+document.addEventListener("focusout", e => { if (e.target.closest("[data-meal]")) hideNote(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideNote(); });
+addEventListener("scroll", () => { if (noteFor && !noteFor.matches(":hover")) hideNote(); }, { passive:true });
+
+/* Clics */
+document.addEventListener("click", e => {
+  const r = e.target.closest("[data-recipe]");
+  if (r) { openRecipe(r.dataset.recipe); return; }
+  const d = e.target.closest("[data-dia]");
+  if (d) { selectDay(d.dataset.dia); return; }
+  const v = e.target.closest("[data-view]");
+  if (v) { setView(v.dataset.view); if (v.dataset.view === "recetas") renderRecipes(); setHash(v.dataset.view === "recetas" ? "recetario" : ""); scrollTo(0, 0); return; }
+  const f = e.target.closest("[data-f]");
+  if (f) { filtro = f.dataset.f; syncChips(); renderRecipes(); }
+});
+$("recSearch").addEventListener("input", e => { busqueda = e.target.value.trim(); renderRecipes(); });
+$("recBody").addEventListener("change", e => {
+  if (e.target.type === "checkbox") e.target.checked ? marcados.add(e.target.id) : marcados.delete(e.target.id);
+});
+$("backBtn").addEventListener("click", () => {
+  setView("menu"); setHash("");
+  scrollTo({ top: volverA ? volverA.y : 0, behavior: "auto" });
+});
+
+/* Inicio */
+$("metaKcal").textContent = fmt(META.kcal);
+$("metaP").textContent = META.p;
+$("tips").innerHTML = TIPS.map(t => `<div class="tip-item"><h4>${t[0]}</h4><p>${t[1]}</p></div>`).join("");
+const hash = (location.hash || "").slice(1);
+if (DIAS.some(d => d.k === hash)) diaSel = hash;
+renderDays(); renderDay(); renderWeek();
+if (hash === "recetario") { setView("recetas"); renderRecipes(); }
+else if (hash.startsWith("receta-") && byId[hash.slice(7)]) openRecipe(hash.slice(7));
+</script>
