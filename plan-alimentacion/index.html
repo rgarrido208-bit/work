@@ -249,7 +249,15 @@ h1 span{color:var(--accent)}
 .shop-list .nm{font-weight:600}
 .shop-list .qty{font-family:var(--f-mono);font-size:12px;color:var(--ink);text-align:right;max-width:20ch}
 .shop-list .qty small{display:block;font-family:var(--f-body);font-size:11px;color:var(--muted);text-decoration:none}
-.shop-list .uso{grid-column:2/-1;font-size:12px;color:var(--muted)}
+.shop-list .uso{grid-column:2;font-size:12px;color:var(--muted)}
+.shop-list .precio{grid-column:3;text-align:right;font-family:var(--f-mono);font-size:12.5px;font-weight:600;white-space:nowrap}
+.shop-list .precio small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.shop-list input:checked ~ .precio{color:var(--muted)}
+.cost-row{display:flex;flex-wrap:wrap;gap:12px 36px;align-items:flex-end}
+.cost{display:grid;gap:2px}
+.cost b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:clamp(22px,4vw,30px);font-weight:600;letter-spacing:-.02em}
+.cost.main b{color:var(--accent)}
+.cost-note{font-size:13px;color:var(--muted);max-width:75ch}
 .shop-mode{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
 .view-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .shop-list input:checked ~ .nm,.shop-list input:checked ~ .qty{text-decoration:line-through;color:var(--muted)}
@@ -323,6 +331,12 @@ h1 span{color:var(--accent)}
       <div class="chips" id="shopDays" role="group" aria-label="Días a comprar" hidden></div>
     </div>
     <p class="shop-note" id="shopNote"></p>
+    <div class="cost-row">
+      <div class="cost main"><span class="eyebrow">Total estimado</span><b id="costTotal"></b></div>
+      <div class="cost"><span class="eyebrow">Te falta</span><b id="costFalta"></b></div>
+      <div class="cost"><span class="eyebrow">Lo que comes cuesta</span><b id="costConsumo"></b></div>
+    </div>
+    <p class="cost-note">Precios estimados de supermercado en Santiago, redondeados; cambian según tienda y temporada, y en la feria la fruta y la verdura suelen salir más baratas. El total es lo que pagas en la caja por envases completos. "Lo que comes" es solo lo que usan las recetas, porque bolsas como las de arroz, avena o legumbres duran más de una semana.</p>
     <div class="shop-top">
       <div class="shop-prog">
         <div class="lbl"><span>En el carro</span><b id="shopCount"></b></div>
@@ -485,7 +499,7 @@ const SHOP = [
     ["Choclos","u","mar:a:0.5 sab:a:1 sab:c:0.5","","Charquicán, cazuela y ensalada del sáb"],
     ["Porotos verdes","g","mar:a:100 sab:a:200","","Charquicán y cazuela"],
     ["Brócoli","u","mie:a:0.5","","Pescado del mié"],
-    ["Espinaca o acelga","taza","vie:c:1","1 paquete","Tortilla del vie"],
+    ["Espinaca o acelga","taza","vie:c:1","bolsa de 300 g","Tortilla del vie"],
     ["Champiñones","g","dom:d:100","bandeja de 200 g","Omelette del dom"],
     ["Zapallo italiano","u","dom:a:0.5","","Pollo al horno del dom"],
     ["Betarraga cocida","u","vie:a:1","","Merluza del vie"],
@@ -501,27 +515,27 @@ const SHOP = [
     ["Merluza en filete","g","vie:a:160","","Almuerzo del vie"],
     ["Atún al agua","lata","sab:c:1","","Ensalada del sáb"] ]},
   { cat:"Lácteos y huevos", items:[
-    ["Huevos","u","lun:d:3 lun:s:1 mar:a:1 mie:s:2 mie:c:1 jue:d:2 vie:c:4 sab:d:2 sab:c:1 dom:d:3 dom:c:1","","Desayunos, charquicán, arroz, tortilla, ensaladas y snacks"],
-    ["Leche semidescremada","ml","mar:d:250 mar:s:250 jue:s:250 vie:d:300 vie:s:250","","Avena, batido y vasos de leche"],
+    ["Huevos","u","lun:d:3 lun:s:1 mar:a:1 mie:s:2 mie:c:1 jue:d:2 vie:c:4 sab:d:2 sab:c:1 dom:d:3 dom:c:1","por docena","Desayunos, charquicán, arroz, tortilla, ensaladas y snacks"],
+    ["Leche semidescremada","ml","mar:d:250 mar:s:250 jue:s:250 vie:d:300 vie:s:250","caja de 1 L","Avena, batido y vasos de leche"],
     ["Yogur natural","u","lun:s:1 mar:c:0.25 sab:d:1 sab:s:1","","Salsa del wrap, panqueques y snacks"],
     ["Yogur griego natural","u","mie:d:1 jue:s:1","","Desayuno del mié y snack del jue"],
     ["Quesillo","g","mar:s:30 mie:d:30 mie:s:30 jue:d:60 dom:s:30","quesillo de ≈250 g","Tostadas, sándwich y once"],
-    ["Queso fresco","g","vie:c:30 dom:c:60","queso chico de ≈125 g","Tortilla del vie y crema del dom"],
+    ["Queso fresco","g","vie:c:30 dom:c:60","queso de ≈250 g","Tortilla del vie y crema del dom"],
     ["Queso gauda o mantecoso","g","dom:d:30","","Omelette del dom"],
     ["Parmesano rallado","cda","jue:a:1","1 sobre chico","Boloñesa del jue"] ]},
   { cat:"Panadería", items:[
     ["Pan de molde integral","rebanada","lun:d:2 mar:s:2 mie:d:1 jue:d:2 vie:d:1 vie:c:2 sab:a:1 sab:c:2 dom:d:2 dom:c:2","bolsa de ≈18 rebanadas","Tostadas, sándwich y acompañamientos"],
     ["Marraquetas integrales chicas","u","sab:s:1 dom:s:0.5","","Once del sáb y dom"],
-    ["Tortillas integrales","u","mar:c:2","1 paquete","Wrap del mar"],
-    ["Pan pita integral","u","mie:s:1","","Snack del mié"] ]},
+    ["Tortillas integrales","u","mar:c:2","paquete de 10","Wrap del mar"],
+    ["Pan pita integral","u","mie:s:1","paquete de 6","Snack del mié"] ]},
   { cat:"Legumbres, granos y pastas", items:[
     ["Lentejas","taza","lun:c:1.5","bolsa de 500 g","Olla de 3 porciones para la colación del lun"],
     ["Porotos blancos o hallados","taza","jue:c:1.5","bolsa de 500 g","Olla de 3 porciones para la colación del jue"],
     ["Garbanzos cocidos","taza","sab:c:0.75","1 tarro","Ensalada del sáb"],
-    ["Arroz integral (crudo)","g","lun:c:35 mie:c:100 vie:a:100 sab:a:25","bolsa de 500 g","Lentejas, arroz salteado, merluza y cazuela"],
-    ["Quinoa","taza","lun:a:0.5","1 bolsa chica","Almuerzo del lun"],
+    ["Arroz integral (crudo)","g","lun:c:35 mie:c:100 vie:a:100 sab:a:25","bolsa de 1 kg","Lentejas, arroz salteado, merluza y cazuela"],
+    ["Quinoa","taza","lun:a:0.5","bolsa de 250 g","Almuerzo del lun"],
     ["Avena","g","mar:d:50 vie:d:25 sab:d:45","bolsa de 500 g","Avena, batido y panqueques"],
-    ["Granola sin azúcar añadida","g","mie:d:40","1 bolsa chica","Desayuno del mié"],
+    ["Granola sin azúcar añadida","g","mie:d:40","bolsa de 300 g","Desayuno del mié"],
     ["Fideos integrales","g","jue:a:80","paquete de 400 g","Boloñesa del jue"],
     ["Tallarines","g","jue:c:180","paquete de 400 g","Porotos con riendas del jue (olla de 3 porciones)"] ]},
   { cat:"Despensa", items:[
@@ -543,6 +557,27 @@ const SHOP = [
     ["Albahaca","","jue:a:- jue:c:-","1 atado","Boloñesa y porotos","un poco"],
     ["Especias","","lun:a:- mar:a:- mie:a:- jue:a:- vie:a:- sab:a:- dom:a:-","revisa la despensa","Comino, ají de color, orégano, merkén, romero, canela, pimienta y polvos de hornear","lo de la receta",true] ]}
 ];
+
+// Precios estimados de supermercado en Santiago (CLP). Tipos:
+// ["u", precio por unidad] · ["kg", precio por kilo] · ["pq", precio del envase, cuánto trae en la unidad del producto] · ["fijo", precio del envase]
+const PRECIOS = {
+  "Plátanos":["u",280], "Manzanas":["u",350], "Frutillas":["kg",4000], "Mandarinas":["u",250], "Naranja":["u",350], "Pera":["u",400], "Limones":["u",200],
+  "Paltas":["u",1200], "Papas medianas":["u",200], "Zapallo":["kg",1400], "Tomates":["u",350], "Cebollas":["u",200], "Cebolla morada":["u",300],
+  "Zanahorias":["u",150], "Pimentones":["u",700], "Lechuga":["u",1000], "Choclos":["u",800], "Porotos verdes":["kg",3000], "Brócoli":["u",1300],
+  "Espinaca o acelga":["pq",1400,6], "Champiñones":["pq",1600,200], "Zapallo italiano":["u",500], "Betarraga cocida":["u",500], "Pepino":["u",600],
+  "Arvejas congeladas":["pq",1800,3.5], "Ajo":["pq",500,11], "Jengibre":["fijo",400],
+  "Pechuga o tutos de pollo":["kg",5500], "Carne molida magra 5 %":["kg",10000], "Posta negra u osobuco":["kg",10000], "Jurel o salmón":["kg",10000],
+  "Merluza en filete":["kg",7500], "Atún al agua":["u",1600],
+  "Huevos":["pq",3200,12], "Leche semidescremada":["pq",1150,1000], "Yogur natural":["u",450], "Yogur griego natural":["u",800], "Quesillo":["pq",2400,250],
+  "Queso fresco":["pq",2300,250], "Queso gauda o mantecoso":["kg",11000], "Parmesano rallado":["pq",1500,8],
+  "Pan de molde integral":["pq",2300,18], "Marraquetas integrales chicas":["u",300], "Tortillas integrales":["pq",2200,10], "Pan pita integral":["pq",1800,6],
+  "Lentejas":["pq",1700,2.5], "Porotos blancos o hallados":["pq",2000,2.5], "Garbanzos cocidos":["pq",1300,1.5], "Arroz integral (crudo)":["pq",1900,1000],
+  "Quinoa":["pq",1800,1.5], "Avena":["pq",1300,500], "Granola sin azúcar añadida":["pq",3500,300], "Fideos integrales":["pq",1300,400], "Tallarines":["pq",1000,400],
+  "Tomate triturado":["pq",1000,1.5], "Mantequilla de maní sin azúcar":["pq",3500,20], "Almendras":["kg",16000], "Nueces":["kg",14000],
+  "Chía o linaza":["pq",1700,20], "Pepitas de zapallo":["pq",1500,10], "Galletas de arroz":["pq",1300,15], "Salsa de soya baja en sodio":["pq",1200,10],
+  "Aceite de oliva":["fijo",5500], "Miel":["pq",4500,70], "Té de hierbas (bolsitas)":["pq",1200,20],
+  "Cilantro":["fijo",500], "Perejil":["fijo",500], "Cebollín o ciboulette":["fijo",500], "Albahaca":["fijo",700], "Especias":null
+};
 
 const META = { kcal:2300, p:110 };
 const DIAS = [
@@ -753,6 +788,20 @@ function fmtQty(n, u){
   return fmtNum(n) + " " + UNI[u][n > 1 ? 1 : 0];
 }
 
+const clp = n => "$" + Math.round(n).toLocaleString("es-CL");
+const r10 = n => Math.round(n / 10) * 10;
+function precioItem(it){
+  const pr = PRECIOS[it.n];
+  if (!pr) return null;
+  const [tipo, P, N] = pr, q = it.total;
+  if (tipo === "fijo") return { compra:P, consumo:0, base:"" };
+  if (q == null) return null;
+  if (tipo === "u") { const k = Math.ceil(q - 1e-9); return { compra:k * P, consumo:r10(q * P), base: k > 1 ? `${k} × ${clp(P)}` : `${clp(P)} c/u` }; }
+  if (tipo === "kg") { const c = r10(q / 1000 * P); return { compra:c, consumo:c, base:`${clp(P)} el kg` }; }
+  const k = Math.ceil(q / N - 1e-9);
+  return { compra:k * P, consumo:r10(q / N * P), base: k > 1 ? `${k} × ${clp(P)}` : "" };
+}
+
 function calcularCompra(){
   const sel = new Set(diasActivos().map(d => d.k));
   return SHOP_ITEMS.map(c => ({ cat:c.cat, items:c.items.map(it => {
@@ -785,36 +834,46 @@ function renderShop(){
     ? "Compra el fin de semana: el domingo cocinas las lentejas del lunes, y del pollo al horno sale el relleno del wrap del martes. Las legumbres, el arroz y la avena alcanzan para más de una semana."
     : "Elige uno o varios días y la lista suma solo lo que esas comidas necesitan. Las ollas de lentejas, porotos y cazuela traen la cantidad completa porque rinden más de una porción.";
   $("copyBox").hidden = true;
-  $("shopBody").innerHTML = calcularCompra().map(c => `<section class="shop-cat">
+  const datos = calcularCompra();
+  let consumo = 0;
+  $("shopBody").innerHTML = datos.map(c => `<section class="shop-cat">
     <h3>${c.cat} <small></small></h3>
     <ul class="shop-list">${c.items.map(it => {
       const main = it.total == null ? (semana ? it.pack : it.poco) : fmtQty(it.total, it.u);
       const sec = it.total == null && semana ? "" : it.pack;
-      return `<li><label><input type="checkbox" id="${it.id}"${marcados.has(it.id) ? " checked" : ""}><span class="nm">${it.n}</span><span class="qty">${main}${sec ? `<small>${sec}</small>` : ""}</span><span class="uso">${semana ? it.uso : usoPorDia(it)}</span></label></li>`;
+      const pr = precioItem(it);
+      if (pr) consumo += pr.consumo;
+      const precio = pr ? `≈ ${clp(pr.compra)}${pr.base ? `<small>${pr.base}</small>` : ""}` : "—";
+      return `<li><label><input type="checkbox" id="${it.id}" data-precio="${pr ? pr.compra : 0}"${marcados.has(it.id) ? " checked" : ""}><span class="nm">${it.n}</span><span class="qty">${main}${sec ? `<small>${sec}</small>` : ""}</span><span class="uso">${semana ? it.uso : usoPorDia(it)}</span><span class="precio">${precio}</span></label></li>`;
     }).join("")}</ul></section>`).join("");
+  $("costConsumo").textContent = "≈ " + clp(consumo);
   updateShop();
 }
 
 function updateShop(){
-  let tot = 0, ok = 0;
+  let tot = 0, ok = 0, plata = 0, falta = 0;
   document.querySelectorAll("#shopBody .shop-cat").forEach(sec => {
     const cbs = [...sec.querySelectorAll("input[type=checkbox]")], n = cbs.filter(c => c.checked).length;
+    const sub = cbs.reduce((a, c) => a + +c.dataset.precio, 0);
+    plata += sub; falta += cbs.filter(c => !c.checked).reduce((a, c) => a + +c.dataset.precio, 0);
     tot += cbs.length; ok += n;
-    sec.querySelector("h3 small").textContent = `${n}/${cbs.length}`;
+    sec.querySelector("h3 small").textContent = `${n}/${cbs.length} · ${clp(sub)}`;
     sec.classList.toggle("done", n === cbs.length);
   });
   $("shopCount").textContent = `${ok} de ${tot}`;
   $("shopBar").style.width = (tot ? Math.round(ok / tot * 100) : 0) + "%";
+  $("costTotal").textContent = "≈ " + clp(plata);
+  $("costFalta").textContent = "≈ " + clp(falta);
 }
 
 function textoPendiente(){
   const bloques = [...document.querySelectorAll("#shopBody .shop-cat")].map(sec => {
     const faltan = [...sec.querySelectorAll("label")].filter(l => !l.querySelector("input").checked)
-      .map(l => `- ${l.querySelector(".nm").textContent}: ${l.querySelector(".qty").firstChild.textContent}`);
+      .map(l => `- ${l.querySelector(".nm").textContent}: ${l.querySelector(".qty").firstChild.textContent} · ${l.querySelector(".precio").firstChild.textContent}`);
     return faltan.length ? sec.querySelector("h3").firstChild.textContent.trim() + "\n" + faltan.join("\n") : "";
   }).filter(Boolean);
   const titulo = `Lista de compras (${etiquetaCompra()})`;
-  return bloques.length ? titulo + "\n\n" + bloques.join("\n\n") : titulo + ": ya tienes todo.";
+  return bloques.length ? titulo + "\n\n" + bloques.join("\n\n") + `\n\nTotal pendiente ${$("costFalta").textContent}` : titulo + ": ya tienes todo.";
 }
 
 function abrirComprasDia(k){
