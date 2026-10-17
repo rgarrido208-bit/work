@@ -66,7 +66,7 @@
 .pal-opt[aria-pressed="true"]{color:var(--ink);font-weight:600}
 .pal-opt[aria-pressed="true"] .sw{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width:620px){.top-text{padding-right:52px}}
+@media (max-width:620px){.top-text h1{padding-right:52px}.profile{gap:6px}.pill{font-size:11px;padding:4px 8px}}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 .wrap,#viewMenu,#viewRec,#dayPanel,#viewMenu>section,#recBody,.rec-day{grid-template-columns:minmax(0,1fr)}
@@ -146,7 +146,7 @@ h1 span{color:var(--accent)}
 
 /* Platos del día */
 .meals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-@media (max-width:860px){.meals{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.meals{grid-template-columns:minmax(0,1fr)}}
 [data-kind="desayuno"]{--c:var(--des);--soft:var(--des-soft)}
 [data-kind="almuerzo"]{--c:var(--alm);--soft:var(--alm-soft)}
 [data-kind="cena"]{--c:var(--cen);--soft:var(--cen-soft)}
@@ -180,7 +180,7 @@ h1 span{color:var(--accent)}
 
 /* Extras + balance */
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-@media (max-width:860px){.split{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.split{grid-template-columns:minmax(0,1fr)}}
 .extras{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .extras li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:baseline}
 .extras .t{font-family:var(--f-mono);font-size:13px;font-weight:600}
@@ -233,7 +233,6 @@ h1 span{color:var(--accent)}
 .glasses{display:flex;flex-wrap:wrap;gap:4px}
 .glass{width:32px;height:40px;padding:2px;border:0;background:transparent;border-radius:8px}
 .glass svg{width:100%;height:100%;display:block}
-@media (max-width:520px){.glasses{gap:2px}.glass{width:29px;height:37px;padding:1px}}
 .glass .g{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
 .glass .w{fill:var(--water);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
 .glass.full .w{opacity:1;transform:none}
@@ -328,6 +327,85 @@ h1 span{color:var(--accent)}
 @media (max-width:520px){.view-btn{padding:8px 11px;font-size:13px}.views{gap:2px}}
 
 .foot{font-size:13px;color:var(--muted);max-width:75ch;display:grid;gap:6px;padding-top:20px;border-top:1px solid var(--line)}
+/* Celulares y tablets */
+body{-webkit-tap-highlight-color:transparent}
+button,label,summary{touch-action:manipulation}
+.panel,.water{scroll-margin-top:16px}
+.ing-touch{display:none;border-top:1px dashed var(--line);padding-top:8px}
+.ing-touch summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:36px;font-weight:600;font-size:14px;color:var(--c)}
+.ing-touch summary::-webkit-details-marker{display:none}
+.ing-touch summary::after{content:"+";font-family:var(--f-mono);font-size:18px}
+.ing-touch[open] summary::after{content:"−"}
+.ing-touch ul{margin:6px 0 0;padding:0 0 0 18px;display:grid;gap:3px;font-size:14px}
+@media (hover:none){.ing-touch{display:block}}
+
+.agenda{display:none;list-style:none;margin:0;padding:0}
+.agenda li{position:relative;display:grid;grid-template-columns:46px 14px minmax(0,1fr);gap:10px;align-items:start;padding:7px 0}
+.agenda li::before{content:"";position:absolute;left:61px;top:0;bottom:0;width:2px;background:var(--line)}
+.agenda li:first-child::before{top:50%}
+.agenda li:last-child::before{bottom:50%}
+.agenda .t{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:600;padding-top:1px}
+.agenda .dot{position:relative;z-index:1;width:12px;height:12px;margin-top:4px;border-radius:50%;background:var(--c,var(--muted));box-shadow:0 0 0 3px var(--surface)}
+.agenda .tx{display:grid;gap:1px;min-width:0}
+.agenda .tx b{font-weight:600}
+.agenda .tx small{font-size:12.5px;color:var(--muted)}
+.ag-des{--c:var(--des)} .ag-alm{--c:var(--alm)} .ag-cen{--c:var(--cen)} .ag-mic{--c:var(--micro)} .ag-snk{--c:var(--snack)} .ag-sleep{--c:var(--sleep)} .ag-work{--c:var(--work)}
+
+.week-list{display:none}
+.wl-day{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px 4px}
+.wl-day.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.wl-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;padding-bottom:6px}
+.wl-head b{font-family:var(--f-display);font-size:17px}
+.wl-head span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.wl-day .cell-btn{padding:9px 0;border-top:1px dotted var(--line);border-radius:0;width:100%}
+.wl-day .cell-btn small{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+
+.bnav{display:none}
+
+@media (max-width:1000px) and (min-width:701px){
+  .meal-hit{grid-template-columns:minmax(0,1fr);justify-items:start;gap:12px}
+}
+@media (pointer:coarse){
+  .chip{padding:10px 16px}
+  .btn{min-height:44px}
+  .link-btn{padding:10px 0}
+  .ing input,.shop-list input{width:20px;height:20px;margin-top:1px}
+  .ing label{grid-template-columns:22px minmax(0,1fr)}
+  .shop-list label{grid-template-columns:22px minmax(0,1fr) auto}
+  .search input{font-size:16px;padding:11px 16px}
+}
+@media (max-width:760px){
+  .views{display:none}
+  .wrap{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .week-scroll{display:none}
+  .week-list{display:grid;gap:10px}
+  .back-float{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .bnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;z-index:45;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgb(0 0 0 / .08);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .bnav button{display:grid;justify-items:center;align-content:center;gap:3px;min-height:54px;border:0;background:transparent;border-radius:12px;font-size:11px;font-weight:600;color:var(--muted)}
+  .bnav svg{width:22px;height:22px;padding:3px 14px;box-sizing:content-box;border-radius:999px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .bnav [aria-current="page"]{color:var(--accent)}
+  .bnav [aria-current="page"] svg{background:var(--accent-soft)}
+}
+@media (max-width:600px){
+  .wrap{padding-top:18px;gap:22px}
+  h1{font-size:clamp(32px,10vw,44px)}
+  .panel,.meal{padding:14px}
+  .recipe{padding:16px}
+  .day-head h2{font-size:30px}
+  .tl-scroll,.legend{display:none}
+  .agenda{display:block}
+  .glasses{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;width:100%}
+  .glass{width:auto;height:auto;aspect-ratio:4/5;padding:1px}
+  .water-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+  .water-actions .btn{padding:9px 6px}
+  .water-actions .lg{display:none}
+}
+@media (max-width:360px){
+  .day-btn .s{font-size:9px}
+  .plato{width:80px;height:80px}
+  .plato .e1{font-size:34px}
+  .plato .e2,.plato .e3{font-size:18px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 <script>try{var pal=localStorage.getItem("planAlimentacion.paleta");if(pal&&pal!=="auto")document.documentElement.setAttribute("data-palette",pal)}catch(e){}</script>
@@ -366,6 +444,7 @@ h1 span{color:var(--accent)}
         <p>Pasa el mouse para ver ingredientes · clic para la receta · <button class="link-btn" data-view="compras">Ver la lista de compras →</button></p>
       </div>
       <div class="week-scroll"><table class="week" id="week"></table></div>
+      <div class="week-list" id="weekList"></div>
     </section>
     <section style="display:grid;gap:16px">
       <div class="section-head"><h2>Consejos para tu horario</h2></div>
@@ -431,6 +510,12 @@ h1 span{color:var(--accent)}
 
 <div class="float-note" id="note" role="tooltip" aria-hidden="true"></div>
 <button class="back-float" id="backBtn" hidden>← Volver al menú</button>
+<nav class="bnav" aria-label="Secciones">
+  <button data-view="menu" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></svg>Menú</button>
+  <button data-view="recetas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5z"/><path d="M5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/></svg>Recetas</button>
+  <button data-view="compras"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.3 11h10.3L20 7.5H6.3"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Compras</button>
+  <button data-goto="water"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3.2 4.2 6.2 7.4 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.4 3-6.6 6.2-10.8z"/></svg>Agua</button>
+</nav>
 
 <script>
 // Macros por porción en gramos (p = proteína, c = carbohidratos, g = grasas). Las kcal se calculan con 4/4/9.
@@ -707,6 +792,24 @@ function renderDays(){
   ).join("");
 }
 
+function agenda(t, d){
+  const sueno = t.seg.filter(x => x[0] === "sueno"), trabajo = t.seg.find(x => x[0] === "trabajo");
+  const ex = EXTRAS[d.k] || [], CLAVE = { des:"desayuno", alm:"almuerzo", cen:"cena" };
+  const items = [[sueno[0][2], "Despertar", "", "sleep"]];
+  if (trabajo) items.push([trabajo[1], "Entrada al turno", `${fmtH(trabajo[1])} a ${fmtH(trabajo[2])}`, "work"]);
+  t.ev.forEach(([h, l, k]) => {
+    let sub = "";
+    if (CLAVE[k]) sub = byId[`${d.k}-${CLAVE[k]}`].nombre;
+    else if (k === "snk") { const e = ex.find(x => x[0] === fmtH(h)); sub = e ? e[1].replace(/^Once: (.)/, (_, c) => c.toUpperCase()) : ""; }
+    else sub = l === "Micro" ? "Sale la micro al trabajo" : "Fin del turno";
+    items.push([h, l, sub, k]);
+  });
+  ex.filter(e => !t.ev.some(([h]) => fmtH(h) === e[0])).forEach(e => { const [hh, mm] = e[0].split(":"); items.push([+hh + mm / 60, "Snack", e[1], "snk"]); });
+  items.push([sueno[sueno.length - 1][1], "A dormir", "", "sleep"]);
+  items.sort((a, b) => a[0] - b[0]);
+  return `<ol class="agenda">${items.map(([h, l, sub, k]) => `<li class="ag-${k}"><span class="t">${fmtH(h)}</span><span class="dot"></span><span class="tx"><b>${l}</b>${sub ? `<small>${sub}</small>` : ""}</span></li>`).join("")}</ol>`;
+}
+
 function timeline(t){
   const A = 8, B = 27, pos = h => ((h - A) / (B - A) * 100).toFixed(2) + "%";
   const segs = t.seg.map(([k,a,b]) => `<span class="seg ${k}" style="left:${pos(a)};width:${((b - a) / (B - A) * 100).toFixed(2)}%"></span>`).join("");
@@ -728,6 +831,7 @@ function mealCard(m, t){
       <div class="macros">${macros(m)}</div>
       <div class="badges"><span class="badge">Preparación: ${m.min} min</span>${m.llevar ? '<span class="badge">Para llevar en tupper</span>' : ""}</div>
     </div>
+    <details class="ing-touch"><summary>Ver ingredientes</summary><ul>${m.ing.map(i => `<li>${i}</li>`).join("")}</ul></details>
     <div class="meal-foot"><span class="hint mouse">Mouse encima: ingredientes</span><button class="link-btn" data-recipe="${m.id}">Ver receta →</button></div>
   </article>`;
 }
@@ -742,7 +846,7 @@ function renderDay(){
   const ex = EXTRAS[d.k] || [];
   $("dayPanel").innerHTML = `
     <div class="day-head"><h2>${d.n}</h2><span class="turno">${t.chip}</span><p class="nota">${t.nota}</p><button class="link-btn" data-compras-dia="${d.k}">Lista de compras del ${d.n.toLowerCase()} →</button></div>
-    <div class="panel"><div class="panel-title"><h3>Tu día, hora a hora</h3><span class="eyebrow">08:00 → 03:00</span></div>${timeline(t)}</div>
+    <div class="panel"><div class="panel-title"><h3>Tu día, hora a hora</h3><span class="eyebrow">08:00 → 03:00</span></div>${timeline(t)}${agenda(t, d)}</div>
     <div class="meals">${meals.map(m => mealCard(m, t)).join("")}</div>
     <div class="split">
       <div class="panel"><div class="panel-title"><h3>Entre comidas</h3><span class="eyebrow">snacks</span></div>
@@ -769,6 +873,11 @@ function renderWeek(){
   }).join("")}</tr>`).join("");
   const tot = `<tr class="tot"><th scope="row" style="color:var(--muted)">Total día</th>${DIAS.map((d, i) => `<td${td(i)}>${fmt(totalDia(d.k).k)} kcal</td>`).join("")}</tr>`;
   $("week").innerHTML = head + `<tbody>${rows}${tot}</tbody>`;
+  $("weekList").innerHTML = DIAS.map((d, i) => `<div class="wl-day${i === hoyIdx ? " today" : ""}">
+    <div class="wl-head"><b>${d.n}${i === hoyIdx ? " · hoy" : ""}</b><span>${TURNOS[d.t].chip} · ${fmt(totalDia(d.k).k)} kcal</span></div>
+    ${TIPOS.map(tp => { const m = byId[d.k + "-" + tp];
+      return `<button class="cell-btn" data-kind="${tp}" data-meal="${m.id}" data-recipe="${m.id}"><span class="em" aria-hidden="true">${m.plato[0]}</span><span><small>${tp === "cena" && d.t !== "casa" ? "Colación" : TIPO_N[tp]}</small>${m.nombre}</span></button>`; }).join("")}
+  </div>`).join("");
 }
 
 function visible(m){
@@ -819,6 +928,7 @@ function setView(v){
     $(view).hidden = k !== v;
     $(tab).setAttribute("aria-selected", String(k === v));
   }
+  document.querySelectorAll(".bnav [data-view]").forEach(b => b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   if (v !== "recetas") $("backBtn").hidden = true;
   if (v === "recetas") renderRecipes();
   if (v === "compras") renderShop();
@@ -1061,6 +1171,8 @@ document.addEventListener("click", e => {
   if (cd) { abrirComprasDia(cd.dataset.comprasDia); return; }
   const d = e.target.closest("[data-dia]");
   if (d) { selectDay(d.dataset.dia); return; }
+  const g = e.target.closest("[data-goto]");
+  if (g) { setView("menu"); setHash(""); $(g.dataset.goto).scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block:"start" }); return; }
   const v = e.target.closest("[data-view]");
   if (v) { setView(v.dataset.view); setHash(VIEWS[v.dataset.view][2]); scrollTo(0, 0); return; }
   const f = e.target.closest("[data-f]");
@@ -1140,7 +1252,7 @@ function renderAgua(){
       <div class="water-actions">
         <button class="btn" data-agua="-1"${n ? "" : " disabled"}>−1 vaso</button>
         <button class="btn primary" data-agua="1">+1 vaso</button>
-        <button class="btn" data-agua="2">+ Botella 500 ml</button>
+        <button class="btn" data-agua="2" aria-label="Sumar botella de 500 ml">+ <span class="lg">Botella </span>500 ml</button>
       </div>
     </div>
     <div class="meter"><i style="width:${Math.min(100, n / AGUA_META * 100)}%"></i></div>
